@@ -21,12 +21,14 @@ namespace PortoSeguroBOT.Dialogs
         {
             await context.PostAsync("Entendi que deseja contratar um seguro");
             await context.Forward(new SeguroLuisDialog(), null, new Activity { Text = userToBotText }, System.Threading.CancellationToken.None);
+            context.Wait(MessageReceived);
         }
 
         [LuisIntent("SolicitarBoleto")]
         public async Task BoletoAsync(IDialogContext context, LuisResult result)
         {
             await context.PostAsync("Entendi que deseja segunda via de Boleto");
+            context.Wait(MessageReceived);
         }
 
         [LuisIntent("None")]
@@ -34,6 +36,7 @@ namespace PortoSeguroBOT.Dialogs
         public async Task NoneAsync(IDialogContext context, LuisResult result)
         {
            await context.PostAsync("Desculpe, eu não entendi...");
+            context.Wait(MessageReceived);
         }
 
         private string userToBotText;
