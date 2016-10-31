@@ -17,7 +17,7 @@ namespace PortoSeguroBOT.Dialogs
         [LuisIntent("ContratarSeguroViagem")]
         public async Task SeguroViagemAsync(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("Entendi que deseja seguro ViagemX");
+            await context.PostAsync("Entendi que deseja seguro ViagemY");
             context.Wait(MessageReceived);
         }
 
