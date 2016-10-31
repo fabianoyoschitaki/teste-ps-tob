@@ -20,21 +20,41 @@ namespace PortoSeguroBOT.Dialogs
         public async Task SeguroAsync(IDialogContext context, LuisResult result)
         {
             await context.PostAsync("[RootLuisDialog] Entendi que deseja contratar um seguro");
-            await context.Forward(new SeguroLuisDialog(), null, new Activity { Text = userToBotText }, System.Threading.CancellationToken.None);            
+            string sourceDialog;
+            if (!context.UserData.TryGetValue("SourceDialog", out sourceDialog)
+                || !sourceDialog.Equals("SeguroLuisDialog"))
+            {
+                await context.Forward(new SeguroLuisDialog(), null, new Activity { Text = userToBotText }, System.Threading.CancellationToken.None);            
+            } else
+            {
+                // se não entendeu, assume
+                await this.NoneAsync(context, result);        
+            }
         }
 
         [LuisIntent("SolicitarBoleto")]
         public async Task BoletoAsync(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("[RootLuisDialog] Entendi que deseja segunda via de Boleto");
-            context.Wait(MessageReceived);
+            string sourceDialog;
+            if (!context.UserData.TryGetValue("SourceDialog", out sourceDialog)
+                || !sourceDialog.Equals("BoletoLuisDialog"))
+            {
+                await context.PostAsync("[RootLuisDialog] Entendi que deseja segunda via de Boleto");
+                await context.Forward(new BoletoLuisDialog(), null, new Activity { Text = userToBotText }, System.Threading.CancellationToken.None);
+            }
+            else
+            {
+                // se não entendeu, assume
+                await this.NoneAsync(context, result);
+            }
         }
 
         [LuisIntent("None")]
         [LuisIntent("")]
         public async Task NoneAsync(IDialogContext context, LuisResult result)
         {
-           await context.PostAsync("[RootLuisDialog] Desculpe, eu não entendi...");
+            await context.PostAsync("[RootLuisDialog] Desculpe, eu não entendi...");
+            context.UserData.RemoveValue("SourceDialog");
             context.Wait(MessageReceived);
         }
 

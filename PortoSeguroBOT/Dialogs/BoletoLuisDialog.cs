@@ -11,14 +11,14 @@ using System.Web;
 
 namespace PortoSeguroBOT.Dialogs
 {
-    [LuisModel(Constants.LuisIdSeguro, Constants.LuisSubscriptionKey)]
+    [LuisModel(Constants.LuisIdBoleto, Constants.LuisSubscriptionKey)]
     [Serializable]
-    public class SeguroLuisDialog : LuisDialog<object>
+    public class BoletoLuisDialog : LuisDialog<object>
     {
-        [LuisIntent("ContratarSeguroViagem")]
-        public async Task SeguroViagemAsync(IDialogContext context, LuisResult result)
+        [LuisIntent("GerarSegundaViaBoleto")]
+        public async Task GerarSegundaViaBoletoAsync(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("[SeguroLuisDialog] Entendi que deseja seguro ViagemY");
+            await context.PostAsync("[BoletoLuisDialog] Entendi que deseja gerar segunda via boleto");
             context.Wait(MessageReceived);
         }
 
@@ -26,8 +26,8 @@ namespace PortoSeguroBOT.Dialogs
         [LuisIntent("")]
         public async Task NoneAsync(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("[SeguroLuisDialog] Desculpe, eu não entendi.");
-            context.UserData.SetValue("SourceDialog", "SeguroLuisDialog");
+            await context.PostAsync("[BoletoLuisDialog] Desculpe, eu não entendi.");
+            context.UserData.SetValue("SourceDialog", "BoletoLuisDialog");
             await context.Forward(new RootLuisDialog(), null, new Activity { Text = userToBotText }, System.Threading.CancellationToken.None);            
         }
 
