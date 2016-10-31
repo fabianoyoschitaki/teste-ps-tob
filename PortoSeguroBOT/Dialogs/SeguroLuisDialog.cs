@@ -1,6 +1,7 @@
 ﻿using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Luis;
 using Microsoft.Bot.Builder.Luis.Models;
+using Microsoft.Bot.Connector;
 using PortoSeguroBOT.Helpers;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ namespace PortoSeguroBOT.Dialogs
         [LuisIntent("ContratarSeguroViagem")]
         public async Task SeguroViagemAsync(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("Entendi que deseja seguro ViagemY");
+            await context.PostAsync("[SeguroLuisDialog] Entendi que deseja seguro ViagemY");
             context.Wait(MessageReceived);
         }
 
@@ -25,7 +26,15 @@ namespace PortoSeguroBOT.Dialogs
         [LuisIntent("")]
         public async Task NoneAsync(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("Desculpe, eu não entendi.");
+            await context.PostAsync("[SeguroLuisDialog] Desculpe, eu não entendi.");
+            await context.Forward(new RootLuisDialog(), null, new Activity { Text = userToBotText }, System.Threading.CancellationToken.None);            
+        }
+
+        private string userToBotText;
+        protected async override Task MessageReceived(IDialogContext context, IAwaitable<IMessageActivity> item)
+        {
+            userToBotText = (await item).Text;
+            await base.MessageReceived(context, item);
         }
     }
 }

@@ -22,7 +22,7 @@ namespace PortoSeguroBOT
             if (activity.Type == ActivityTypes.ConversationUpdate)
             {
                 ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
-                Activity reply = activity.CreateReply("Benvindo a Porto Seguro, como podemos te ajudar?");
+                Activity reply = activity.CreateReply("[MessagesController] Benvindo a Porto Seguro, como podemos te ajudar?");
                 await connector.Conversations.ReplyToActivityAsync(reply);
             }
             else if (activity.Type == ActivityTypes.Message)
