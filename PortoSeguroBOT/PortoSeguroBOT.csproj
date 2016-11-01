@@ -128,7 +128,8 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Helpers\Constants.cs" />
-    <Compile Include="Helpers\ContantsUF.cs" />
+    <Compile Include="Helpers\ConstantsPais.cs" />
+    <Compile Include="Helpers\ConstantsUF.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
