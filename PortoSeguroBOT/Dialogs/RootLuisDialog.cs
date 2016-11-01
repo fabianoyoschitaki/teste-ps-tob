@@ -53,7 +53,7 @@ namespace PortoSeguroBOT.Dialogs
         [LuisIntent("")]
         public async Task NoneAsync(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("[RootLuisDialog] Desculpe, eu não entendi...");
+            await context.PostAsync("[RootLuisDialog] Desculpe, eu não entendi....");
             context.UserData.RemoveValue("SourceDialog");
             context.Wait(MessageReceived);
         }
