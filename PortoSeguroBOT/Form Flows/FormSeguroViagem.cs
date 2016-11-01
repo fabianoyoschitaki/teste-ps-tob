@@ -56,7 +56,6 @@ namespace PortoSeguroBOT.Form_Flows
             else
             {
                 result.Value = estado.Descricao;
-                ctx
             }
 
             return Task.FromResult(result);
