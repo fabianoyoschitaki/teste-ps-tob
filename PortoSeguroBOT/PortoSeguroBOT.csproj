@@ -120,9 +120,10 @@
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\MessagesController.cs" />
+    <Compile Include="Dialogs\Class1.cs" />
     <Compile Include="Dialogs\RootLuisDialog.cs" />
     <Compile Include="Dialogs\SeguroLuisDialog.cs" />
-	<Compile Include="Dialogs\BoletoLuisDialog.cs" />
+    <Compile Include="Dialogs\BoletoLuisDialog.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
