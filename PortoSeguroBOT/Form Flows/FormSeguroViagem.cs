@@ -23,6 +23,10 @@ namespace PortoSeguroBOT.Form_Flows
         [Template(TemplateUsage.NotUnderstood, "País Inválidox")]
         public string Destino;
 
+        [Prompt("Nesta viagem visitará também algum país europeu? {||}")]
+        [Template(TemplateUsage.NotUnderstood, "Não entendi a sua resposta")]
+        public string PaisEuropeu;
+
         public static IForm<FormSeguroViagem> SeguroBuildForm()
         {
             //Callback para final de formulário
@@ -35,6 +39,7 @@ namespace PortoSeguroBOT.Form_Flows
             return new FormBuilder<FormSeguroViagem>()
                 .Field(nameof(Origem), validate: ValidateUF)
                 .Field(nameof(Destino), validate: ValidatePais)
+                .Field(nameof(PaisEuropeu),validate: ValidatePaisEuropeu)
                 .OnCompletion(processandoCalculo)
                 .Build();
         }
@@ -56,7 +61,6 @@ namespace PortoSeguroBOT.Form_Flows
             else
             {
                 result.Value = estado.Descricao;
-                ctx
             }
 
             return Task.FromResult(result);
@@ -84,6 +88,26 @@ namespace PortoSeguroBOT.Form_Flows
             return Task.FromResult(result);
         }
 
+        private static Task<ValidateResult> ValidatePaisEuropeu(FormSeguroViagem state, object value)
+        {
+            var result = new ValidateResult
+            {
+                IsValid = true,
+                Value = value
+            };
+
+            if (ConstantsBase.getConfirmation(value.ToString()) == null)
+            {
+                result.Feedback = "Não entendi a sua resposta";
+                result.IsValid = false;
+            }
+            else
+            {
+                result.Value = ConstantsBase.getConfirmation(value.ToString());
+            }
+
+            return Task.FromResult(result);
+        }
 
         public static Estado GetEstado(string valor)
         {
