@@ -19,7 +19,7 @@ namespace PortoSeguroBOT.Dialogs
         [LuisIntent("ContratarSeguro")]
         public async Task SeguroAsync(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("[RootLuisDialog] Entendi que deseja contratar um seguro");
+            //await context.PostAsync("[RootLuisDialog] Entendi que deseja contratar um seguro");
             string sourceDialog;
             if (!context.UserData.TryGetValue("SourceDialog", out sourceDialog)
                 || !sourceDialog.Equals("SeguroLuisDialog"))

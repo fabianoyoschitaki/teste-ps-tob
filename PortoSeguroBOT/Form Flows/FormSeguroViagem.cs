@@ -59,13 +59,13 @@ namespace PortoSeguroBOT.Form_Flows
             OnCompletionAsyncDelegate<FormSeguroViagem> processandoCalculo = async (context, state) =>
             {
                 context.UserData.SetValue("DadosSeguroViagem", PopulateContextWithData(state));
-                await context.PostAsync($"Fim de formulário, calculando seguro");
+                await context.PostAsync($"Aguarde um momento enquanto calculamos seu seguro.");
             };
 
             return new FormBuilder<FormSeguroViagem>()
                 .Field(nameof(Origem), validate: ValidateUF)
                 .Field(nameof(Destino), validate: ValidatePais)
-                .Field(nameof(PaisEuropeu),validate: ValidateSimNao)
+                .Field(nameof(PaisEuropeu), validate: ValidateSimNao)
                 .Field(nameof(DataPartida), validate: ValidateStartDate)
                 .Field(nameof(DataRetorno), validate: ValidateEndDate)
                 .Field(nameof(Menor70), validate: ValidateQtd)
@@ -258,12 +258,12 @@ namespace PortoSeguroBOT.Form_Flows
             SeguroViagem seguro = new SeguroViagem();
             seguro.UfOrigem = state.Origem;
             seguro.PaisDestino = state.Destino;
-            seguro.PaisEuropeuDestino = state.PaisEuropeu == "Sim"?true:false;
+            seguro.PaisEuropeuDestino = state.PaisEuropeu == "Sim" ? true : false;
             seguro.DataPartida = state.DataPartida;
             seguro.DataRetorno = state.DataRetorno;
             seguro.Menor70 = int.Parse(state.Menor70);
             seguro.Maior70 = int.Parse(state.Maior70);
-            seguro.Motivo =  state.MotivoDaViagem.ToString();
+            seguro.Motivo = state.MotivoDaViagem.ToString();
             return seguro;
         }
 

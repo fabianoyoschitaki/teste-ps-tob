@@ -3,6 +3,7 @@ using Microsoft.Bot.Builder.FormFlow;
 using Microsoft.Bot.Builder.Luis;
 using Microsoft.Bot.Builder.Luis.Models;
 using Microsoft.Bot.Connector;
+using PortoSeguroBOT.Bean;
 using PortoSeguroBOT.Form_Flows;
 using PortoSeguroBOT.Helpers;
 using System;
@@ -20,7 +21,7 @@ namespace PortoSeguroBOT.Dialogs
         [LuisIntent("ContratarSeguroViagem")]
         public async Task SeguroViagemAsync(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("[SeguroLuisDialog] Entendi que deseja seguro ViagemY");
+            //await context.PostAsync("[SeguroLuisDialog] Entendi que deseja seguro ViagemY");
 
             var SeguroForms = new FormDialog<FormSeguroViagem>(new FormSeguroViagem(), FormSeguroViagem.SeguroBuildForm, FormOptions.PromptInStart);
             context.Call(SeguroForms, this.callbackFormViagem);
@@ -32,20 +33,29 @@ namespace PortoSeguroBOT.Dialogs
         [LuisIntent("")]
         public async Task NoneAsync(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("[SeguroLuisDialog] Desculpe, eu não entendi.");
+            //await context.PostAsync("[SeguroLuisDialog] Desculpe, eu não entendi.");
             context.UserData.SetValue("SourceDialog", "SeguroLuisDialog");
             await context.Forward(new RootLuisDialog(), null, new Activity { Text = userToBotText }, System.Threading.CancellationToken.None);            
         }
 
         private async Task callbackFormViagem(IDialogContext context, IAwaitable<object> result)
         {
-            //var reply = context.MakeMessage();
-            //reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-            //reply.Attachments = GetCardsAttachments();
-            await context.PostAsync("[SeguroLuisDialog] Voltei do Formulário de Viagem");
+            SeguroViagem seguro;
+            if (context.UserData.TryGetValue("DadosSeguroViagem", out seguro))
+            {
+                var reply = context.MakeMessage();
+                reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+                reply.Attachments =  seguro.GetCardsAttachments();
+                await context.PostAsync(reply);
+                //await context.PostAsync("[SeguroLuisDialog] Voltei do Formulário de Viagem");
+            }
+            else
+            {
+                await context.PostAsync("[SeguroLuisDialog] Não encontrei dados para essa Cotação");
+            }
+          
             context.Wait(MessageReceived);
         }
-
 
         private string userToBotText;
         protected async override Task MessageReceived(IDialogContext context, IAwaitable<IMessageActivity> item)
