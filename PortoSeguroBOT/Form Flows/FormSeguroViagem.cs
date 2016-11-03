@@ -16,6 +16,16 @@ namespace PortoSeguroBOT.Form_Flows
     [Serializable]
     public class FormSeguroViagem
     {
+        public IDialogContext ctx { get; set; }
+        public FormSeguroViagem()
+        {
+
+        }
+        public FormSeguroViagem (IDialogContext ctx)
+        {
+            this.ctx = ctx;
+        }
+
         [Prompt("Qual o estado de origem da sua viagem? {||}")]
         [Template(TemplateUsage.NotUnderstood, "Estado Inválido")]
         public string Origem;
@@ -65,7 +75,7 @@ namespace PortoSeguroBOT.Form_Flows
             return new FormBuilder<FormSeguroViagem>()
                 .Field(nameof(Origem), validate: ValidateUF)
                 .Field(nameof(Destino), validate: ValidatePais)
-                .Field(nameof(PaisEuropeu), validate: ValidateSimNao)
+                .Field(nameof(PaisEuropeu),validate: ValidateSimNao)
                 .Field(nameof(DataPartida), validate: ValidateStartDate)
                 .Field(nameof(DataRetorno), validate: ValidateEndDate)
                 .Field(nameof(Menor70), validate: ValidateQtd)
@@ -223,6 +233,11 @@ namespace PortoSeguroBOT.Form_Flows
             };
         
             return Task.FromResult(result);
+        }
+
+        private static Boolean DestinoIsEurope(FormSeguroViagem state, object value)
+        {
+            return false;
         }
 
         public static Estado GetEstado(string valor)

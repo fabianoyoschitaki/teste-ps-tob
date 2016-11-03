@@ -23,7 +23,8 @@ namespace PortoSeguroBOT.Dialogs
         {
             //await context.PostAsync("[SeguroLuisDialog] Entendi que deseja seguro ViagemY");
 
-            var SeguroForms = new FormDialog<FormSeguroViagem>(new FormSeguroViagem(), FormSeguroViagem.SeguroBuildForm, FormOptions.PromptInStart);
+            //TODO ENVIAR CONTEXTO PARA TER ACESSO ATRAVES DOS VALIDATES DO FORM
+            var SeguroForms = new FormDialog<FormSeguroViagem>(new FormSeguroViagem(context), FormSeguroViagem.SeguroBuildForm, FormOptions.PromptInStart);
             context.Call(SeguroForms, this.callbackFormViagem);
 
             //context.Wait(MessageReceived);
