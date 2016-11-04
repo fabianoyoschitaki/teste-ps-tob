@@ -250,6 +250,11 @@ namespace PortoSeguroBOT.Form_Flows
                     retorno = estado;
                     break;
                 }
+                if (estado.Descricao.Equals(valor, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    retorno = estado;
+                    break;
+                }
             }
             return retorno;
         }
@@ -268,17 +273,38 @@ namespace PortoSeguroBOT.Form_Flows
             return retorno;
         }
 
+        public static int GetCodMotivo(string valor)
+        {
+           switch(valor)
+            {
+                case "Lazer":
+                    return 1;
+                case "Negocios":
+                    return 2;
+                case "Estudos":
+                    return 3;
+                case "VisitaAmigoOuParente":
+                    return 4;
+                default:
+                    return 0;
+            }
+        }
+
         private static SeguroViagem PopulateContextWithData(FormSeguroViagem state)
         {
             SeguroViagem seguro = new SeguroViagem();
-            seguro.UfOrigem = state.Origem;
+            seguro.UfOrigem = GetEstado(state.Origem).Sigla;
+            seguro.EstadoOrigem = state.Origem;
             seguro.PaisDestino = state.Destino;
+            seguro.CodPaisDestino = GetPais(state.Destino).CodigoPais;
+            seguro.CodContinente = GetPais(state.Destino).CodigoContinente;
             seguro.PaisEuropeuDestino = state.PaisEuropeu == "Sim" ? true : false;
             seguro.DataPartida = state.DataPartida;
             seguro.DataRetorno = state.DataRetorno;
             seguro.Menor70 = int.Parse(state.Menor70);
             seguro.Maior70 = int.Parse(state.Maior70);
             seguro.Motivo = state.MotivoDaViagem.ToString();
+            seguro.CodMotivo = GetCodMotivo(state.MotivoDaViagem.ToString());
             return seguro;
         }
 
