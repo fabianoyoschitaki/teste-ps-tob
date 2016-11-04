@@ -14,6 +14,7 @@ using static PortoSeguroBOT.Helpers.ConstantsUF;
 namespace PortoSeguroBOT.Form_Flows
 {
     [Serializable]
+    [Template(TemplateUsage.NotUnderstood, "Eu não entendo \"{0}\".", "Tente novamente.")]
     public class FormSeguroViagem
     {
         public IDialogContext ctx { get; set; }
@@ -26,15 +27,16 @@ namespace PortoSeguroBOT.Form_Flows
             this.ctx = ctx;
         }
 
-        [Prompt("Qual o estado de origem da sua viagem? {||}")]
+        [Prompt("Qual o estado de origem da sua viagem?")]
         [Template(TemplateUsage.NotUnderstood, "Estado Inválido")]
         public string Origem;
 
-        [Prompt("Qual o país de destino da sua viagem? {||}")]
+        [Prompt("Qual o país de destino da sua viagem?")]
         [Template(TemplateUsage.NotUnderstood, "País Inválidox")]
         public string Destino;
 
-        [Prompt("Nesta viagem visitará também algum país europeu? {||}")]
+        [Optional]
+        [Prompt("Nesta viagem visitará também algum país europeu?")]
         [Template(TemplateUsage.NotUnderstood, "Não entendi a sua resposta")]
         public string PaisEuropeu;
 
@@ -48,19 +50,22 @@ namespace PortoSeguroBOT.Form_Flows
         [Pattern(@"^(((0[1-9]|[12]\d|3[01])\/(0[13578]|1[02])\/((19|[2-9]\d)\d{2}))|((0[1-9]|[12]\d|30)\/(0[13456789]|1[012])\/((19|[2-9]\d)\d{2}))|((0[1-9]|1\d|2[0-8])\/02\/((19|[2-9]\d)\d{2}))|(29\/02\/((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))))$")]
         public DateTime DataRetorno { get; set; }
 
-        [Prompt("Quantos passageiros com menos de 70 anos (inclua o passageiro principal)? {||}")]
+        [Prompt("Quantos passageiros com menos de 70 anos (inclua o passageiro principal)?")]
+        [Numeric(1, 10)]
         [Template(TemplateUsage.NotUnderstood, "Quantidade inválida")]
-        public string Menor70;
+        public int Menor70;
 
-        [Prompt("Quantos passageiros com mais de 70 anos (inclua o passageiro principal)? {||}")]
+        [Prompt("Quantos passageiros com mais de 70 anos (inclua o passageiro principal)?")]
+        [Numeric(1, 10)]
         [Template(TemplateUsage.NotUnderstood, "Quantidade inválida")]
-        public string Maior70;
+        public int Maior70;
 
-        [Prompt("Essa viagem irá incluir a prática de algum esporte ou aventura? {||}")]
+        [Prompt("Essa viagem irá incluir a prática de algum esporte ou aventura?")]
         [Template(TemplateUsage.NotUnderstood, "Não entendi sua resposta")]
         public string ViagemAventura;
 
-        [Prompt("Qual o motivo da sua viagem? {||}")]
+        [Prompt("Qual o {&} da sua viagem? {||}")]
+        [Describe("motivo")]
         public MotivoViagemOptions? MotivoDaViagem;
 
         public static IForm<FormSeguroViagem> SeguroBuildForm()
@@ -73,17 +78,31 @@ namespace PortoSeguroBOT.Form_Flows
             };
 
             return new FormBuilder<FormSeguroViagem>()
+                .Message("Benvindo ao Seguro Viagem!")
                 .Field(nameof(Origem), validate: ValidateUF)
                 .Field(nameof(Destino), validate: ValidatePais)
-                .Field(nameof(PaisEuropeu),validate: ValidateSimNao)
-                .Field(nameof(DataPartida), validate: ValidateStartDate)
-                .Field(nameof(DataRetorno), validate: ValidateEndDate)
-                .Field(nameof(Menor70), validate: ValidateQtd)
-                .Field(nameof(Maior70), validate: ValidateQtd)
-                .Field(nameof(ViagemAventura), validate: ValidateSimNao)
+                .Message("Você escolheu o estado {Origem} com destino a {Destino}.")
+                //.Field(nameof(PaisEuropeu), validate: ValidateSimNao)
+                //.Field(nameof(DataPartida), validate: ValidateStartDate)
+                //.Field(nameof(DataRetorno), validate: ValidateEndDate)
+                //.Field(nameof(Menor70), validate: ValidateQtd)
+                //.Field(nameof(Maior70), validate: ValidateQtd)
+                .Field(nameof(Menor70))
+                .Confirm(async (state) =>
+                {
+                    var cost = 0.0;
+                    switch (state.Menor70)
+                    {
+                        case 1: cost = 5.0; break;
+                        case 2: cost = 6.50; break;
+                    }
+                    return new PromptAttribute($"Seu valor será {cost:C2}, tudo bem?");
+                })
+                .Field(nameof(Maior70))
+                //.Field(nameof(ViagemAventura), validate: ValidateSimNao)
                 .Field(nameof(MotivoDaViagem), validate: ValidateMotivoViagem)
                 .OnCompletion(processandoCalculo)
-                .Build();
+                .Build();            
         }
 
         private static Task<ValidateResult> ValidateUF(FormSeguroViagem state, object value)
@@ -301,8 +320,8 @@ namespace PortoSeguroBOT.Form_Flows
             seguro.PaisEuropeuDestino = state.PaisEuropeu == "Sim" ? true : false;
             seguro.DataPartida = state.DataPartida;
             seguro.DataRetorno = state.DataRetorno;
-            seguro.Menor70 = int.Parse(state.Menor70);
-            seguro.Maior70 = int.Parse(state.Maior70);
+            seguro.Menor70 = state.Menor70;
+            seguro.Maior70 = state.Maior70;
             seguro.Motivo = state.MotivoDaViagem.ToString();
             seguro.CodMotivo = GetCodMotivo(state.MotivoDaViagem.ToString());
             return seguro;
