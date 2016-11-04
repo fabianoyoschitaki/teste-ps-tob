@@ -75,7 +75,7 @@ namespace PortoSeguroBOT.Form_Flows
             return new FormBuilder<FormSeguroViagem>()
                 .Field(nameof(Origem), validate: ValidateUF)
                 .Field(nameof(Destino), validate: ValidatePais)
-                .Field(nameof(PaisEuropeu),validate: ValidateSimNao)
+                .Field(nameof(PaisEuropeu),active: DestinoIsEurope,validate: ValidateSimNao)
                 .Field(nameof(DataPartida), validate: ValidateStartDate)
                 .Field(nameof(DataRetorno), validate: ValidateEndDate)
                 .Field(nameof(Menor70), validate: ValidateQtd)
@@ -86,6 +86,12 @@ namespace PortoSeguroBOT.Form_Flows
                 .Build();
         }
 
+        private static bool DestinoIsEurope(FormSeguroViagem state) {
+            Pais p = GetPais(state.Destino);
+            bool ret;
+            ret =  p.CodigoContinente == 3? false: true;
+            return ret;
+        }
         private static Task<ValidateResult> ValidateUF(FormSeguroViagem state, object value)
         {
             var result = new ValidateResult
