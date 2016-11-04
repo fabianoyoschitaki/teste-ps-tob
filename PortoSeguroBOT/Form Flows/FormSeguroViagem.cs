@@ -16,25 +16,33 @@ namespace PortoSeguroBOT.Form_Flows
     [Serializable]
     public class FormSeguroViagem
     {
-        public IDialogContext ctx { get; set; }
-        public FormSeguroViagem()
-        {
+        public Dictionary<string, string> data { get; set; }
+        public string TempOrigem;
+        public string TempDestino;
+        public bool TempOrigemValid;
+        public bool TempDestinoValid;
 
-        }
-        public FormSeguroViagem (IDialogContext ctx)
-        {
-            this.ctx = ctx;
-        }
+        [Prompt("Confirma seu local de saída sendo: {TempOrigem}?")]
+        public string confirmaEstado;
 
-        [Prompt("Qual o estado de origem da sua viagem? {||}")]
+        [Prompt("O local {TempOrigem} não é um estado válido, qual o estado de origem da sua viagem?")]
+        public string notFoundEstado;
+
+        [Prompt("Qual o estado de origem da sua viagem?")]
         [Template(TemplateUsage.NotUnderstood, "Estado Inválido")]
         public string Origem;
 
-        [Prompt("Qual o país de destino da sua viagem? {||}")]
-        [Template(TemplateUsage.NotUnderstood, "País Inválidox")]
+        [Prompt("Confirma seu local de destino sendo: {TempDestino}?")]
+        public string confirmaPais;
+
+        [Prompt("O local {TempDestino} não é um país válido, qual o país de destino da sua viagem?")]
+        public string notFoundPais;
+
+        [Prompt("Qual o país de destino da sua viagem?")]
+        [Template(TemplateUsage.NotUnderstood, "País Inválido")]
         public string Destino;
 
-        [Prompt("Nesta viagem visitará também algum país europeu? {||}")]
+        [Prompt("Nesta viagem visitará também algum país europeu?")]
         [Template(TemplateUsage.NotUnderstood, "Não entendi a sua resposta")]
         public string PaisEuropeu;
 
@@ -63,6 +71,38 @@ namespace PortoSeguroBOT.Form_Flows
         [Prompt("Qual o motivo da sua viagem? {||}")]
         public MotivoViagemOptions? MotivoDaViagem;
 
+        public FormSeguroViagem()
+        {
+
+        }
+
+        public FormSeguroViagem(Dictionary<string, string> data)
+        {
+            this.data = data;
+            data.TryGetValue("Localidade::LocalidadeOrigem", out this.TempOrigem);
+            data.TryGetValue("Localidade::LocalidadeDestino", out this.TempDestino);
+
+            if (GetEstado(this.TempOrigem) == null)
+            {
+                this.TempOrigemValid = false;
+            }
+            else
+            {
+                this.TempOrigem = GetEstado(this.TempOrigem).Descricao;
+                this.TempOrigemValid = true;
+            }
+
+            if (GetPais(this.TempDestino) == null)
+            {
+                this.TempDestinoValid = false;
+            }
+            else
+            {
+                this.TempDestino = GetPais(this.TempDestino).Descricao;
+                this.TempDestinoValid = true;
+            }
+        }
+
         public static IForm<FormSeguroViagem> SeguroBuildForm()
         {
             //Callback para final de formulário
@@ -73,8 +113,14 @@ namespace PortoSeguroBOT.Form_Flows
             };
 
             return new FormBuilder<FormSeguroViagem>()
-                .Field(nameof(Origem), validate: ValidateUF)
-                .Field(nameof(Destino), validate: ValidatePais)
+                .Field(nameof(TempOrigem), active: alwaysFalse) //Precisa Incluir esse Field para ter visibilidade
+                .Field(nameof(TempDestino), active: alwaysFalse) //Precisa Incluir esse Field para ter visibilidade
+                .Field(nameof(confirmaEstado), active: HasOrign, validate: ValidateSimNao)
+                .Field(nameof(notFoundEstado), active: IsOrignValid, validate: ValidateUF)
+                .Field(nameof(Origem),active:ConfirmedOrign,validate: ValidateUF)
+                .Field(nameof(confirmaPais), active: HasDestiny, validate: ValidateSimNao)
+                .Field(nameof(notFoundPais), active: IsDestinyValid, validate: ValidatePais)
+                .Field(nameof(Destino), active: ConfirmedDestiny, validate: ValidatePais)
                 .Field(nameof(PaisEuropeu),active: DestinoIsEurope,validate: ValidateSimNao)
                 .Field(nameof(DataPartida), validate: ValidateStartDate)
                 .Field(nameof(DataRetorno), validate: ValidateEndDate)
@@ -86,12 +132,99 @@ namespace PortoSeguroBOT.Form_Flows
                 .Build();
         }
 
+        private static bool alwaysFalse(FormSeguroViagem state)
+        {
+            return false;
+       }
+        private static bool HasOrign(FormSeguroViagem state)
+        {
+            if(state.TempOrigem != null && state.TempOrigemValid)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private static bool IsOrignValid(FormSeguroViagem state)
+        {
+            if (state.TempOrigemValid || state.TempOrigem == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        private static bool ConfirmedOrign(FormSeguroViagem state)
+        {
+            if (state.confirmaEstado == "Não" || !state.TempOrigemValid)
+            {
+                return true;
+            }
+            else
+            {
+                state.Origem = state.TempOrigem;
+                return false;
+            }
+        }
+
+        private static bool HasDestiny(FormSeguroViagem state)
+        {
+            if (state.TempDestino != null && state.TempDestinoValid)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private static bool IsDestinyValid(FormSeguroViagem state)
+        {
+            if (state.TempDestinoValid || state.TempDestino == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+
+        }
+        private static bool ConfirmedDestiny(FormSeguroViagem state)
+        {
+            if (state.confirmaPais == "Não" || !state.TempDestinoValid)
+            {
+                return true;
+            }
+            else
+            {
+                state.Destino = state.TempDestino;
+                return false;
+            }
+        }
+
         private static bool DestinoIsEurope(FormSeguroViagem state) {
             Pais p = GetPais(state.Destino);
             bool ret;
-            ret =  p.CodigoContinente == 3? false: true;
-            return ret;
+            if(p != null)
+            {
+                ret = p.CodigoContinente == 3 ? false : true;
+                return ret;
+            }
+            else
+            {
+                return false;
+            }
+           
         }
+
         private static Task<ValidateResult> ValidateUF(FormSeguroViagem state, object value)
         {
             var result = new ValidateResult
@@ -109,6 +242,8 @@ namespace PortoSeguroBOT.Form_Flows
             else
             {
                 result.Value = estado.Descricao;
+                state.Origem = estado.Descricao;
+                state.confirmaEstado = "Sim";
             }
 
             return Task.FromResult(result);
@@ -131,6 +266,8 @@ namespace PortoSeguroBOT.Form_Flows
             else
             {
                 result.Value = pais.Descricao;
+                state.Destino = pais.Descricao;
+                state.confirmaPais = "Sim";
             }
 
             return Task.FromResult(result);
