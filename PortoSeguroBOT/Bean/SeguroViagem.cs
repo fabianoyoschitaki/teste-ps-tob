@@ -39,7 +39,9 @@ namespace PortoSeguroBOT.Bean
         {
 
             StringBuilder URL = new StringBuilder();
-            URL.Append("https://wwws.portoseguro.com.br/vendaonline/viagem/valorseguroajax.ns?codigoAtendimento=&calculo.isObjetoClonado=false&codigoOperacao=525-A&calculo.codigoOperacao=525-A&codigoCanal=1&codigoCampanha=99999&codigoSusepCorretor=&calculo.susepCorretorWeb=&calculo.browserType=Mozilla%2F5.0+(Windows+NT+6.1%3B+WOW64)+AppleWebKit%2F537.36+(KHTML%2C+like+Gecko)+Chrome%2F50.0.2661.102+Safari%2F537.36");
+            //URL.Append("https://wwws.portoseguro.com.br/vendaonline/viagem/valorseguroajax.ns?codigoAtendimento=&calculo.isObjetoClonado=false&codigoOperacao=525-A&calculo.codigoOperacao=525-A&codigoCanal=1&codigoCampanha=99999&codigoSusepCorretor=&calculo.susepCorretorWeb=&calculo.browserType=Mozilla%2F5.0+(Windows+NT+6.1%3B+WOW64)+AppleWebKit%2F537.36+(KHTML%2C+like+Gecko)+Chrome%2F50.0.2661.102+Safari%2F537.36");
+            URL.Append("http://li102/vendaonline/viagem/valorseguroajax.ns?codigoAtendimento=&calculo.isObjetoClonado=false&codigoOperacao=525-A&calculo.codigoOperacao=525-A&codigoCanal=1&codigoCampanha=99999&codigoSusepCorretor=&calculo.susepCorretorWeb=&calculo.browserType=Mozilla%2F5.0+(Windows+NT+6.1%3B+WOW64)+AppleWebKit%2F537.36+(KHTML%2C+like+Gecko)+Chrome%2F50.0.2661.102+Safari%2F537.36");
+
             URL.Append("&calculo.codigoUfOrigem=");
             URL.Append(this.UfOrigem);
             URL.Append("&calculo.descricaoUfOrigem=");
@@ -50,21 +52,36 @@ namespace PortoSeguroBOT.Bean
             URL.Append(this.CodContinente.ToString());
             URL.Append("&calculo.descricaoPaisDestino=");
             URL.Append(this.PaisDestino);
-            URL.Append("&calculo.dataSaidaProponente=25%2F11%2F2016");
-            URL.Append("&calculo.diaSaidaProponente=25");
-            URL.Append("&calculo.mesSaidaProponente=11");
-            URL.Append("&calculo.anoSaidaProponente=2016");
-            URL.Append("&calculo.dataRetornoProponente=28%2F11%2F2016");
-            URL.Append("&calculo.diaRetornoProponente=28");
-            URL.Append("&calculo.mesRetornoProponente=11");
-            URL.Append("&calculo.anoRetornoProponente=2016");
+            URL.Append("&calculo.dataSaidaProponente="); 
+            URL.Append(this.DataPartida.ToString().Substring(0, 10));
+            URL.Append("&calculo.diaSaidaProponente=");
+            URL.Append(this.DataPartida.Day.ToString());
+            URL.Append("&calculo.mesSaidaProponente=");
+            URL.Append(this.DataPartida.Month.ToString());
+            URL.Append("&calculo.anoSaidaProponente=");
+            URL.Append(this.DataPartida.Year.ToString());
+            URL.Append("&calculo.dataRetornoProponente=");
+            URL.Append(this.DataRetorno.ToString().Substring(0, 10));
+            URL.Append("&calculo.diaRetornoProponente=");
+            URL.Append(this.DataRetorno.Day.ToString());
+            URL.Append("&calculo.mesRetornoProponente=");
+            URL.Append(this.DataRetorno.Month.ToString());
+            URL.Append("&calculo.anoRetornoProponente=");
+            URL.Append(this.DataRetorno.Year.ToString());
             URL.Append("&calculo.duracaoViagem=4");
-            URL.Append("&calculo.qtdAcompanhantes=0");
-            URL.Append("&calculo.qtdPassagMenorSetentaAnos=1");
-            URL.Append("&calculo.qtdPassagMaiorSetentaAnos=0");
+            URL.Append(this.DataRetorno.Subtract(this.DataPartida).Days);
+            URL.Append("&calculo.qtdAcompanhantes=");
+            URL.Append((this.Maior70 + this.Menor70 - 1).ToString());
+            URL.Append("&calculo.qtdPassagMenorSetentaAnos=");
+            URL.Append(this.Menor70.ToString());
+            URL.Append("&calculo.qtdPassagMaiorSetentaAnos=");
+            URL.Append(this.Maior70.ToString());
             URL.Append("&isVisitaPaisEuropeu=");
-            URL.Append("&calculo.isPraticaAventura=false");
-            URL.Append("&calculo.motivoViagem=1");
+            URL.Append(this.PaisEuropeuDestino?"S":"N");
+            URL.Append("&calculo.isPraticaAventura=");
+            URL.Append(this.EsporteAventura.ToString());
+            URL.Append("&calculo.motivoViagem=");
+            URL.Append(this.CodMotivo.ToString());
 
             // Create the web request  
             HttpWebRequest request = WebRequest.Create(URL.ToString()) as HttpWebRequest;

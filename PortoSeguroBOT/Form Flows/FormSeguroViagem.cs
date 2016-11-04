@@ -22,7 +22,7 @@ namespace PortoSeguroBOT.Form_Flows
         {
 
         }
-        public FormSeguroViagem (IDialogContext ctx)
+        public FormSeguroViagem(IDialogContext ctx)
         {
             this.ctx = ctx;
         }
@@ -80,14 +80,11 @@ namespace PortoSeguroBOT.Form_Flows
             return new FormBuilder<FormSeguroViagem>()
                 .Message("Benvindo ao Seguro Viagem!")
                 .Field(nameof(Origem), validate: ValidateUF)
-                .Field(nameof(Destino), validate: ValidatePais)
-                .Message("Você escolheu o estado {Origem} com destino a {Destino}.")
-                //.Field(nameof(PaisEuropeu), validate: ValidateSimNao)
-                //.Field(nameof(DataPartida), validate: ValidateStartDate)
-                //.Field(nameof(DataRetorno), validate: ValidateEndDate)
-                //.Field(nameof(Menor70), validate: ValidateQtd)
-                //.Field(nameof(Maior70), validate: ValidateQtd)
-                .Field(nameof(Menor70))
+                .Field(nameof(Destino), validate: ValidatePais).Message("Você escolheu o estado {Origem} com destino a {Destino}.")
+                .Field(nameof(PaisEuropeu), active: DestinoIsEurope, validate: ValidateSimNao)
+                .Field(nameof(DataPartida), validate: ValidateStartDate)
+                .Field(nameof(DataRetorno), validate: ValidateEndDate)
+                .Field(nameof(Menor70), validate: ValidateQtd)
                 .Confirm(async (state) =>
                 {
                     var cost = 0.0;
@@ -98,13 +95,20 @@ namespace PortoSeguroBOT.Form_Flows
                     }
                     return new PromptAttribute($"Seu valor será {cost:C2}, tudo bem?");
                 })
-                .Field(nameof(Maior70))
-                //.Field(nameof(ViagemAventura), validate: ValidateSimNao)
+                .Field(nameof(Maior70), validate: ValidateQtd)
+                .Field(nameof(ViagemAventura), validate: ValidateSimNao)
                 .Field(nameof(MotivoDaViagem), validate: ValidateMotivoViagem)
                 .OnCompletion(processandoCalculo)
-                .Build();            
+                .Build();
         }
 
+        private static bool DestinoIsEurope(FormSeguroViagem state)
+        {
+            Pais p = GetPais(state.Destino);
+            bool ret;
+            ret = p.CodigoContinente == 3 ? false : true;
+            return ret;
+        }
         private static Task<ValidateResult> ValidateUF(FormSeguroViagem state, object value)
         {
             var result = new ValidateResult
@@ -233,7 +237,7 @@ namespace PortoSeguroBOT.Form_Flows
             }
             else
             {
-                if(newValue < 0)
+                if (newValue < 0)
                 {
                     result.Feedback = "Quantidade inválida";
                     result.IsValid = false;
@@ -250,7 +254,7 @@ namespace PortoSeguroBOT.Form_Flows
                 IsValid = true,
                 Value = value
             };
-        
+
             return Task.FromResult(result);
         }
 
@@ -294,7 +298,7 @@ namespace PortoSeguroBOT.Form_Flows
 
         public static int GetCodMotivo(string valor)
         {
-           switch(valor)
+            switch (valor)
             {
                 case "Lazer":
                     return 1;
