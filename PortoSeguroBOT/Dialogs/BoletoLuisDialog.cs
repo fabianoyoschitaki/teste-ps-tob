@@ -40,16 +40,14 @@ namespace PortoSeguroBOT.Dialogs
                         Usuario user = Usuario.GetUsuario(textResult);
                         if(user.Nome != null)
                         {
-                            await context.PostAsync($"Seu Nome é: {user.Nome}");
-                            await context.PostAsync($"Data de Nascimento: {user.DataNasc}");
-                            context.UserData.SetValue("CPFUser", textResult);
+                            context.UserData.SetValue("UserData", user);
+                            PromptDialog.Text(context, callbackConfirmaData, "Qual a sua data de Nascimento?");
                         }
                         else
                         {
                             await context.PostAsync("Cliente não encontrado");
+                            context.Wait(MessageReceived);
                         }
-                      
-                        context.Wait(MessageReceived);
                     }
                     else
                     {
@@ -60,6 +58,51 @@ namespace PortoSeguroBOT.Dialogs
             catch (TooManyAttemptsException)
             {
             }
+        }
+
+        private async Task callbackConfirmaData(IDialogContext context, IAwaitable<string> result)
+        {
+            try
+            {
+               var textResult = await result;
+                if ("SAIR".Equals(textResult))
+                {
+                    await context.PostAsync("Sua solicitação de boleto foi cancelada, como podemos te ajudar?");
+                    context.Wait(MessageReceived);
+                }
+                else
+                {
+                  try
+                    {
+                        DateTime dt = DateTime.Parse(textResult);
+                        Usuario user = new Usuario();
+                        if(context.UserData.TryGetValue("UserData", out user))
+                        {
+                            if (user.DataNasc.Date.Equals(dt.Date))
+                            {
+                                await context.PostAsync("Usuário Validado");
+                                context.Wait(MessageReceived);
+                            }
+                            else
+                            {
+                                PromptDialog.Text(context, callbackConfirmaData, "Desculpe, a data informada não é a mesma do cadastro, digite novamente no formato dd/MM/yyyy ou SAIR para cancelar a solicitação de segunda via.");
+                            }
+                        }
+                        else
+                        {
+                            await context.PostAsync("Ocorreu um erro no sistema.");
+                            context.Wait(MessageReceived);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        PromptDialog.Text(context, callbackConfirmaData, "Desculpe, isso não é uma data válida, digite no formato dd/MM/yyyy ou SAIR para cancelar a solicitação de segunda via.");
+                    }
+                }
+            }
+            catch (TooManyAttemptsException)
+            {
+             }
         }
 
         [LuisIntent("None")]
