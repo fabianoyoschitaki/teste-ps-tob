@@ -39,7 +39,7 @@ namespace PortoSeguroBOT.Dialogs
             if (!context.UserData.TryGetValue("SourceDialog", out sourceDialog)
                 || !sourceDialog.Equals("BoletoLuisDialog"))
             {
-                await context.PostAsync("[RootLuisDialog] Entendi que deseja segunda via de Boleto");
+                //await context.PostAsync("[RootLuisDialog] Entendi que deseja segunda via de Boleto");
                 await context.Forward(new BoletoLuisDialog(), null, new Activity { Text = userToBotText }, System.Threading.CancellationToken.None);
             }
             else

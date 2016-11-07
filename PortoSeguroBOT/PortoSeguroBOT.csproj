@@ -120,6 +120,7 @@
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Bean\SeguroViagem.cs" />
+    <Compile Include="Bean\Usuario.cs" />
     <Compile Include="Controllers\MessagesController.cs" />
     <Compile Include="Dialogs\RootLuisDialog.cs" />
     <Compile Include="Dialogs\SeguroLuisDialog.cs" />
@@ -132,6 +133,7 @@
     <Compile Include="Helpers\ConstantsBase.cs" />
     <Compile Include="Helpers\ConstantsPais.cs" />
     <Compile Include="Helpers\ConstantsUF.cs" />
+    <Compile Include="Helpers\Validators.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
