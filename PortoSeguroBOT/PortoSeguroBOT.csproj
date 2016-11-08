@@ -119,6 +119,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Bean\Produto.cs" />
     <Compile Include="Bean\SeguroViagem.cs" />
     <Compile Include="Bean\Usuario.cs" />
     <Compile Include="Controllers\MessagesController.cs" />

@@ -80,8 +80,26 @@ namespace PortoSeguroBOT.Dialogs
                         {
                             if (user.DataNasc.Date.Equals(dt.Date))
                             {
-                                await context.PostAsync("Usuário Validado");
-                                context.Wait(MessageReceived);
+                                if (user.Produtos != null)
+                                {
+                                    await context.PostAsync("Selecione entre seus produtos qual deseja a segunda via: ");
+                                    List<Attachment> heroCards = new List<Attachment>();
+                                    foreach (Produto prod in user.Produtos)
+                                    {
+                                        heroCards.Add(GetHeroCard(
+                                            prod.Nome,
+                                            prod.Sucursal + "-" + prod.Ramo + "-" + prod.NumeroApolice + "-" + prod.Item,
+                                            "",
+                                            new CardImage(url: ""),
+                                            new CardAction(ActionTypes.OpenUrl, "Solicitar 2ª Via", value: ""))
+                                        );
+                                    }
+                                    var reply = context.MakeMessage();
+                                    reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+                                    reply.Attachments = heroCards;
+                                    await context.PostAsync(reply);
+                                }
+                               context.Wait(MessageReceived);
                             }
                             else
                             {
@@ -119,6 +137,19 @@ namespace PortoSeguroBOT.Dialogs
         {
             userToBotText = (await item).Text;
             await base.MessageReceived(context, item);
+        }
+
+        public Attachment GetHeroCard(string title, string subtitle, string text, CardImage cardImage, CardAction cardAction)
+        {
+            var heroCard = new HeroCard
+            {
+                Title = title,
+                Subtitle = subtitle,
+                Text = text,
+                Images = new List<CardImage>() { cardImage },
+                Buttons = new List<CardAction>() { cardAction },
+            };
+            return heroCard.ToAttachment();
         }
     }
 }

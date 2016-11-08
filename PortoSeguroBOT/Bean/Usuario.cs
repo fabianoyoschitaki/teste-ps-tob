@@ -18,6 +18,7 @@ namespace PortoSeguroBOT.Bean
         public string DigitoCPF { get; set; }
         public string Nome { get; set; }
         public DateTime DataNasc { get; set; }
+        public IList<Produto> Produtos {get;set;}
 
         public static Usuario GetUsuario(string CPF)
         {
@@ -30,6 +31,23 @@ namespace PortoSeguroBOT.Bean
             try { 
                 user.Nome = dados.Envelope.Body.obterDocumentosPorCnpjCpfResponse.obterDocumentosPorCnpjCpfReturn.nomePessoa;
                 user.DataNasc = DateTime.Parse(dados.Envelope.Body.obterDocumentosPorCnpjCpfResponse.obterDocumentosPorCnpjCpfReturn.dataNascimento);
+                IList<Produto> prods = new List<Produto>();
+                dynamic prodList = dados.Envelope.Body.obterDocumentosPorCnpjCpfResponse.obterDocumentosPorCnpjCpfReturn.documentoSeguradoServiceVO;
+                foreach (dynamic doc in (IDictionary<String, Object>)prodList)
+                {
+                    Produto p = new Produto();
+                    p.Codigo = doc.codigoProdutoUnificacao;
+                    p.Nome = doc.produto;
+                    foreach(dynamic key in (IDictionary<String, Object>)doc.chaveDocumentoVO)
+                    {
+                        if ("sucursal".Equals(key.chaveDocumento)) p.Sucursal = key.valorDocumento;
+                        else if ("ramo".Equals(key.chaveDocumento)) p.Ramo = key.valorDocumento;
+                        else if ("apolice".Equals(key.chaveDocumento)) p.NumeroApolice = key.valorDocumento;
+                        else if ("item".Equals(key.chaveDocumento)) p.Item = key.valorDocumento;
+                    }
+                    prods.Add(p);
+                }
+                user.Produtos = prods;
                 return user;
             } catch (RuntimeBinderException e)
             {
