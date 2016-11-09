@@ -9,6 +9,10 @@ using Microsoft.Bot.Connector;
 using Newtonsoft.Json;
 using Microsoft.Bot.Builder.Dialogs;
 using PortoSeguroBOT.Dialogs;
+using PortoSeguroBOT.Bean;
+using System.ServiceModel.Web;
+using System.ServiceModel;
+using System.ServiceModel.Description;
 
 namespace PortoSeguroBOT
 {
@@ -22,8 +26,20 @@ namespace PortoSeguroBOT
             if (activity.Type == ActivityTypes.ConversationUpdate)
             {
                 ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
-               // Activity reply = activity.CreateReply("[MessagesController] Benvindo a Porto Seguro, como podemos te ajudar?");
-                Activity reply = activity.CreateReply("Benvindo a Porto Seguro, como podemos te ajudar? ");
+               
+                Usuario user = new Usuario();
+                Activity reply = null;
+                StateClient stateClient = activity.GetStateClient();
+                BotData userData = await stateClient.BotState.GetUserDataAsync(activity.ChannelId, activity.From.Id);
+                user = userData.GetProperty<Usuario>("UserData");
+                if (user != null)
+                {
+                    reply = activity.CreateReply($"{user.Nome}, benvindo a Porto Seguro, como podemos te ajudar? ");
+                }
+                else
+                {
+                    reply = activity.CreateReply("Benvindo a Porto Seguro, como podemos te ajudar? ");
+                }
                 await connector.Conversations.ReplyToActivityAsync(reply);
             }
             else if (activity.Type == ActivityTypes.Message)
@@ -67,5 +83,7 @@ namespace PortoSeguroBOT
 
             return null;
         }
+
+      
     }
 }
