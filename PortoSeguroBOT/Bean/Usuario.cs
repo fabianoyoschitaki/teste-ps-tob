@@ -1,4 +1,5 @@
 ﻿using Microsoft.CSharp.RuntimeBinder;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -29,28 +30,36 @@ namespace PortoSeguroBOT.Bean
             user.DigitoCPF = CPF.Substring(9, 2);
             dynamic dados = GetUserData(user.NumeroCPF, user.DigitoCPF);
             try { 
-                user.Nome = dados.Envelope.Body.obterDocumentosPorCnpjCpfResponse.obterDocumentosPorCnpjCpfReturn.nomePessoa;
-                user.DataNasc = DateTime.Parse(dados.Envelope.Body.obterDocumentosPorCnpjCpfResponse.obterDocumentosPorCnpjCpfReturn.dataNascimento);
+                user.Nome = dados.Envelope.Body.obterDocumentosPorCnpjCpfResponse.obterDocumentosPorCnpjCpfReturn.nomePessoa["#text"].Value;
+                user.DataNasc = dados.Envelope.Body.obterDocumentosPorCnpjCpfResponse.obterDocumentosPorCnpjCpfReturn.dataNascimento["#text"].Value;
                 IList<Produto> prods = new List<Produto>();
                 dynamic prodList = dados.Envelope.Body.obterDocumentosPorCnpjCpfResponse.obterDocumentosPorCnpjCpfReturn.documentoSeguradoServiceVO;
-                foreach (dynamic doc in (IDictionary<String, Object>)prodList)
+                foreach (dynamic doc in prodList)
                 {
                     Produto p = new Produto();
-                    p.Codigo = doc.codigoProdutoUnificacao;
-                    p.Nome = doc.produto;
-                    foreach(dynamic key in (IDictionary<String, Object>)doc.chaveDocumentoVO)
-                    {
-                        if ("sucursal".Equals(key.chaveDocumento)) p.Sucursal = key.valorDocumento;
-                        else if ("ramo".Equals(key.chaveDocumento)) p.Ramo = key.valorDocumento;
-                        else if ("apolice".Equals(key.chaveDocumento)) p.NumeroApolice = key.valorDocumento;
-                        else if ("item".Equals(key.chaveDocumento)) p.Item = key.valorDocumento;
+                    p.Codigo = Convert.ToInt32(doc.codigoProdutoUnificacao.Value);
+                    p.Nome = doc.produto.Value;
+                    if(p.Codigo == 5) {
+                        p.NumeroApolice = Convert.ToInt32(doc.chaveDocumentoVO.valorDocumento.Value);
                     }
+                    else
+                    {
+                        foreach (dynamic key in doc.chaveDocumentoVO)
+                        {
+                            if ("sucursal".Equals(key.chaveDocumento.Value)) p.Sucursal = Convert.ToInt32(key.valorDocumento.Value);
+                            else if ("ramo".Equals(key.chaveDocumento.Value)) p.Ramo = Convert.ToInt32(key.valorDocumento.Value);
+                            else if ("apolice".Equals(key.chaveDocumento.Value)) p.NumeroApolice = Convert.ToInt32(key.valorDocumento.Value);
+                            else if ("item".Equals(key.chaveDocumento.Value)) p.Item = Convert.ToInt32(key.valorDocumento.Value);
+                        }
+                    }
+                   
                     prods.Add(p);
                 }
                 user.Produtos = prods;
                 return user;
-            } catch (RuntimeBinderException e)
+            } catch (Exception e)
             {
+                string erro = e.ToString();
                 user.NumeroCPF = null;
                 user.DigitoCPF = null;
                 return user;
@@ -90,8 +99,10 @@ namespace PortoSeguroBOT.Bean
                     {
                         soapResult = rd.ReadToEnd();
                         var xDoc = XDocument.Parse(RemoveAllNamespaces(soapResult));
-                        dynamic root = new ExpandoObject();
-                        Parse(root, xDoc.Elements().First());
+                        XmlDocument doc = new XmlDocument();
+                        doc.LoadXml(xDoc.ToString());
+                        string JsonResult = JsonConvert.SerializeXmlNode(doc);
+                        dynamic root = JsonConvert.DeserializeObject(JsonResult);
                         return root;
                     }
                     

@@ -7,11 +7,19 @@ namespace PortoSeguroBOT.Bean
 {
     public class Produto
     {
-        public int Codigo { get; set; }
+        public Int32? Codigo { get; set; }
         public string Nome { get; set; }
-        public int Ramo { get; set; }
-        public int Sucursal { get; set; }
-        public int NumeroApolice { get; set; }
-        public int Item { get; set;}
+        public Int32? Ramo { get; set; }
+        public Int32? Sucursal { get; set; }
+        public Int32? NumeroApolice { get; set; }
+        public Int32? Item { get; set;}
+
+        public Produto() {
+            this.Ramo = null;
+            this.Sucursal = null;
+            this.NumeroApolice = null;
+            this.Item = null;
+        }
+
     }
 }

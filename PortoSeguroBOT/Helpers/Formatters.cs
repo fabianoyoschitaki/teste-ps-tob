@@ -10,6 +10,7 @@ namespace PortoSeguroBOT.Helpers
         public static string Capitalize(string str)
         { 
             IList<string> Words = new List<string>();
+            str = str.Trim();
             Words = str.Split( );
             string FinalSentence ="";
             foreach(string Word in Words)

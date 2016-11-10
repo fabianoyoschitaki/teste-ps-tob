@@ -94,19 +94,25 @@ namespace PortoSeguroBOT.Dialogs
                         {
                             if (user.DataNasc.Date.Equals(dt.Date))
                             {
-                                await context.PostAsync("Vamos listar seus produtos Porto Seguro [Até Aqui]");
+                                //await context.PostAsync("Vamos listar seus produtos Porto Seguro [Até Aqui]");
                                 if (user.Produtos != null)
                                 {
                                     await context.PostAsync("Selecione entre seus produtos qual deseja a segunda via: ");
                                     List<Attachment> heroCards = new List<Attachment>();
                                     foreach (Produto prod in user.Produtos)
                                     {
+                                        string Dados = "";
+                                        Dados += prod.Sucursal != null ? prod.Sucursal + "-":"";
+                                        Dados += prod.Ramo != null ? prod.Ramo + "-" : "";
+                                        Dados += prod.NumeroApolice;
+                                        Dados += prod.Item != null ? "-" + prod.Item:"";
+
                                         heroCards.Add(GetHeroCard(
                                             prod.Nome,
-                                            prod.Sucursal + "-" + prod.Ramo + "-" + prod.NumeroApolice + "-" + prod.Item,
+                                            Dados,
                                             "",
                                             new CardImage(url: ""),
-                                            new CardAction(ActionTypes.OpenUrl, "Solicitar 2ª Via", value: ""))
+                                            new CardAction(ActionTypes.OpenUrl, "Solicitar 2ª Via", value: "https://www.boletobancario.com/boletofacil/img/boleto-facil-exemplo.pdf"))
                                         );
                                     }
                                     var reply = context.MakeMessage();
@@ -114,7 +120,9 @@ namespace PortoSeguroBOT.Dialogs
                                     reply.Attachments = heroCards;
                                     await context.PostAsync(reply);
                                 }
-                               context.Wait(MessageReceived);
+                                await context.PostAsync("Posso te ajudar em mais alguma coisa?");
+                                context.Wait(MessageReceived);
+
                             }
                             else
                             {
@@ -136,6 +144,18 @@ namespace PortoSeguroBOT.Dialogs
             catch (TooManyAttemptsException)
             {
              }
+        }
+
+        private async Task callbackClickProduto(IDialogContext context, IAwaitable<string> result)
+        {
+            try
+            {
+                var textResult = await result;
+                
+            }
+            catch (TooManyAttemptsException)
+            {
+            }
         }
 
         [LuisIntent("None")]
