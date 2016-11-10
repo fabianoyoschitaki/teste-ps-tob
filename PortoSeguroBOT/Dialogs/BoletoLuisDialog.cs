@@ -6,6 +6,7 @@ using PortoSeguroBOT.Bean;
 using PortoSeguroBOT.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -88,7 +89,7 @@ namespace PortoSeguroBOT.Dialogs
                 {
                   try
                     {
-                        DateTime dt = DateTime.Parse(textResult);
+                        DateTime dt = DateTime.ParseExact(textResult, "dd/MM/yyyy", null);
                         Usuario user = new Usuario();
                         if(context.UserData.TryGetValue("UserData", out user))
                         {
@@ -137,7 +138,7 @@ namespace PortoSeguroBOT.Dialogs
                     }
                     catch (Exception e)
                     {
-                        PromptDialog.Text(context, callbackConfirmaData, "Desculpe, isso não é uma data válida, digite no formato dd/MM/yyyy ou SAIR para cancelar a solicitação de segunda via.");
+                        PromptDialog.Text(context, callbackConfirmaData, $"Desculpe '{textResult}' não é uma data válida, digite no formato dd/MM/yyyy ou SAIR para cancelar a solicitação de segunda via.");
                     }
                 }
             }
