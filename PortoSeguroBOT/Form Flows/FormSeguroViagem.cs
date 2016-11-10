@@ -22,8 +22,8 @@ namespace PortoSeguroBOT.Form_Flows
         public bool TempOrigemValid;
         public bool TempDestinoValid;
 
-        [Prompt("Confirma seu local de saída sendo: {TempOrigem}?")]
-        public string confirmaEstado;
+        [Prompt("Confirma seu local de saída sendo: {TempOrigem}? {||}", ChoiceFormat = "{1}")]
+        public SimNao? confirmaEstado;
 
         [Prompt("O local {TempOrigem} não é um estado válido, qual o estado de origem da sua viagem?")]
         public string notFoundEstado;
@@ -32,8 +32,8 @@ namespace PortoSeguroBOT.Form_Flows
         [Template(TemplateUsage.NotUnderstood, "Estado Inválido")]
         public string Origem;
 
-        [Prompt("Confirma seu local de destino sendo: {TempDestino}?")]
-        public string confirmaPais;
+        [Prompt("Confirma seu local de destino sendo: {TempDestino}? {||}", ChoiceFormat = "{1}")]
+        public SimNao? confirmaPais;
 
         [Prompt("O local {TempDestino} não é um país válido, qual o país de destino da sua viagem?")]
         public string notFoundPais;
@@ -42,9 +42,8 @@ namespace PortoSeguroBOT.Form_Flows
         [Template(TemplateUsage.NotUnderstood, "País Inválido")]
         public string Destino;
 
-        [Prompt("Nesta viagem visitará também algum país europeu?")]
-        [Template(TemplateUsage.NotUnderstood, "Não entendi a sua resposta")]
-        public string PaisEuropeu;
+        [Prompt("Nesta viagem visitará também algum país europeu?{||}", ChoiceFormat = "{1}")]
+        public SimNao? PaisEuropeu;
 
         [Prompt("Qual a data da sua partida? Escreva no padrão dd/mm/aaaa")]
         [Template(TemplateUsage.NotUnderstood, "Eu não entendi \"{0}\".", "Tente novamente com o formato dd/mm/aaaa, eu não entendi \"{0}\".")]
@@ -64,9 +63,8 @@ namespace PortoSeguroBOT.Form_Flows
         [Template(TemplateUsage.NotUnderstood, "Quantidade inválida")]
         public string Maior70;
 
-        [Prompt("Essa viagem irá incluir a prática de algum esporte ou aventura? {||}")]
-        [Template(TemplateUsage.NotUnderstood, "Não entendi sua resposta")]
-        public string ViagemAventura;
+        [Prompt("Essa viagem irá incluir a prática de algum esporte ou aventura? {||}", ChoiceFormat="{1}")]
+        public SimNao? ViagemAventura;
 
         [Prompt("Qual o motivo da sua viagem? {||}")]
         public MotivoViagemOptions? MotivoDaViagem;
@@ -115,18 +113,18 @@ namespace PortoSeguroBOT.Form_Flows
             return new FormBuilder<FormSeguroViagem>()
                 .Field(nameof(TempOrigem), active: alwaysFalse) //Precisa Incluir esse Field para ter visibilidade
                 .Field(nameof(TempDestino), active: alwaysFalse) //Precisa Incluir esse Field para ter visibilidade
-                .Field(nameof(confirmaEstado), active: HasOrign, validate: ValidateSimNao)
+                .Field(nameof(confirmaEstado), active: HasOrign)
                 .Field(nameof(notFoundEstado), active: IsOrignValid, validate: ValidateUF)
                 .Field(nameof(Origem),active:ConfirmedOrign,validate: ValidateUF)
-                .Field(nameof(confirmaPais), active: HasDestiny, validate: ValidateSimNao)
+                .Field(nameof(confirmaPais), active: HasDestiny)
                 .Field(nameof(notFoundPais), active: IsDestinyValid, validate: ValidatePais)
                 .Field(nameof(Destino), active: ConfirmedDestiny, validate: ValidatePais)
-                .Field(nameof(PaisEuropeu),active: DestinoIsEurope,validate: ValidateSimNao)
+                .Field(nameof(PaisEuropeu),active: DestinoIsEurope)
                 .Field(nameof(DataPartida), validate: ValidateStartDate)
                 .Field(nameof(DataRetorno), validate: ValidateEndDate)
                 .Field(nameof(Menor70), validate: ValidateQtd)
                 .Field(nameof(Maior70), validate: ValidateQtd)
-                .Field(nameof(ViagemAventura), validate: ValidateSimNao)
+                .Field(nameof(ViagemAventura))
                 .Field(nameof(MotivoDaViagem), validate: ValidateMotivoViagem)
                 .OnCompletion(processandoCalculo)
                 .Build();
@@ -162,7 +160,7 @@ namespace PortoSeguroBOT.Form_Flows
 
         private static bool ConfirmedOrign(FormSeguroViagem state)
         {
-            if (state.confirmaEstado == "Não" || !state.TempOrigemValid)
+            if (state.confirmaEstado == SimNao.Não || !state.TempOrigemValid)
             {
                 return true;
             }
@@ -199,7 +197,7 @@ namespace PortoSeguroBOT.Form_Flows
         }
         private static bool ConfirmedDestiny(FormSeguroViagem state)
         {
-            if (state.confirmaPais == "Não" || !state.TempDestinoValid)
+            if (state.confirmaPais == SimNao.Não || !state.TempDestinoValid)
             {
                 return true;
             }
@@ -243,7 +241,7 @@ namespace PortoSeguroBOT.Form_Flows
             {
                 result.Value = estado.Descricao;
                 state.Origem = estado.Descricao;
-                state.confirmaEstado = "Sim";
+                state.confirmaEstado = SimNao.Sim;
             }
 
             return Task.FromResult(result);
@@ -267,28 +265,7 @@ namespace PortoSeguroBOT.Form_Flows
             {
                 result.Value = pais.Descricao;
                 state.Destino = pais.Descricao;
-                state.confirmaPais = "Sim";
-            }
-
-            return Task.FromResult(result);
-        }
-
-        private static Task<ValidateResult> ValidateSimNao(FormSeguroViagem state, object value)
-        {
-            var result = new ValidateResult
-            {
-                IsValid = true,
-                Value = value
-            };
-
-            if (ConstantsBase.getConfirmation(value.ToString()) == null)
-            {
-                result.Feedback = "Não entendi a sua resposta";
-                result.IsValid = false;
-            }
-            else
-            {
-                result.Value = ConstantsBase.getConfirmation(value.ToString());
+                state.confirmaPais = SimNao.Sim;
             }
 
             return Task.FromResult(result);
@@ -441,7 +418,7 @@ namespace PortoSeguroBOT.Form_Flows
             seguro.PaisDestino = state.Destino;
             seguro.CodPaisDestino = GetPais(state.Destino).CodigoPais;
             seguro.CodContinente = GetPais(state.Destino).CodigoContinente;
-            seguro.PaisEuropeuDestino = state.PaisEuropeu == "Sim" ? true : false;
+            seguro.PaisEuropeuDestino = state.PaisEuropeu == SimNao.Sim ? true : false;
             seguro.DataPartida = state.DataPartida;
             seguro.DataRetorno = state.DataRetorno;
             seguro.Menor70 = int.Parse(state.Menor70);
@@ -451,6 +428,7 @@ namespace PortoSeguroBOT.Form_Flows
             return seguro;
         }
 
+        public enum SimNao { Sim, Não }
         public enum MotivoViagemOptions { Lazer, Negocios, Estudos, VisitaAmigoOuParente }
     }
 }

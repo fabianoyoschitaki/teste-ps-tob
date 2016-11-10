@@ -13,6 +13,7 @@ using PortoSeguroBOT.Bean;
 using System.ServiceModel.Web;
 using System.ServiceModel;
 using System.ServiceModel.Description;
+using PortoSeguroBOT.Helpers;
 
 namespace PortoSeguroBOT
 {
@@ -34,7 +35,8 @@ namespace PortoSeguroBOT
                 user = userData.GetProperty<Usuario>("UserData");
                 if (user != null)
                 {
-                    reply = activity.CreateReply($"{user.Nome}, benvindo a Porto Seguro, como podemos te ajudar? ");
+                    string UserFirstName = Formatters.Capitalize(user.Nome).Split( )[0];
+                    reply = activity.CreateReply($"Benvindo a Porto Seguro {UserFirstName}, como podemos te ajudar? ");
                 }
                 else
                 {

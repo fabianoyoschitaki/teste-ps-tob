@@ -139,6 +139,7 @@
     <Compile Include="Helpers\ConstantsBase.cs" />
     <Compile Include="Helpers\ConstantsPais.cs" />
     <Compile Include="Helpers\ConstantsUF.cs" />
+    <Compile Include="Helpers\Formatters.cs" />
     <Compile Include="Helpers\Validators.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

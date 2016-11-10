@@ -20,7 +20,16 @@ namespace PortoSeguroBOT.Dialogs
         [LuisIntent("GerarSegundaViaBoleto")]
         public async Task GerarSegundaViaBoletoAsync(IDialogContext context, LuisResult result)
         {
-            PromptDialog.Text(context, callbackBoletoCPF, "No momentos só conseguimos emitir segunda via de boleto do produto Residência, caso deseje digite seu CPF");
+            Usuario user = new Usuario();
+            if (context.UserData.TryGetValue("UserData", out user))
+            {
+                string UserFirstName = Formatters.Capitalize(user.Nome).Split()[0];
+                PromptDialog.Text(context, callbackConfirmaData, $"{UserFirstName}, no momento só conseguimos emitir segunda via de boleto do produto Residência para continuarmos nos confirme sua data de nascimento. Caso deseje a segunda via para outro CPF digite OUTRO");
+            }
+            else
+            {
+                PromptDialog.Text(context, callbackBoletoCPF, "No momento só conseguimos emitir segunda via de boleto do produto Residência, caso deseje digite seu CPF");
+            }
         }
 
         private async Task callbackBoletoCPF(IDialogContext context, IAwaitable<string> result)
@@ -41,7 +50,8 @@ namespace PortoSeguroBOT.Dialogs
                         if(user.Nome != null)
                         {
                             context.UserData.SetValue("UserData", user);
-                            PromptDialog.Text(context, callbackConfirmaData, "Qual a sua data de Nascimento?");
+                            string UserFirstName = Formatters.Capitalize(user.Nome).Split()[0];
+                            PromptDialog.Text(context, callbackConfirmaData, $"{UserFirstName}, qual a sua data de Nascimento?");
                         }
                         else
                         {
@@ -65,10 +75,14 @@ namespace PortoSeguroBOT.Dialogs
             try
             {
                var textResult = await result;
-                if ("SAIR".Equals(textResult))
+                if ("SAIR".Equals(textResult, StringComparison.InvariantCultureIgnoreCase))
                 {
                     await context.PostAsync("Sua solicitação de boleto foi cancelada, como podemos te ajudar?");
                     context.Wait(MessageReceived);
+                }
+                else if ("OUTRO".Equals(textResult, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    PromptDialog.Text(context, callbackBoletoCPF, "No momento só conseguimos emitir segunda via de boleto do produto Residência, caso deseje digite seu CPF");
                 }
                 else
                 {
@@ -80,6 +94,7 @@ namespace PortoSeguroBOT.Dialogs
                         {
                             if (user.DataNasc.Date.Equals(dt.Date))
                             {
+                                await context.PostAsync("Vamos listar seus produtos Porto Seguro [Até Aqui]");
                                 if (user.Produtos != null)
                                 {
                                     await context.PostAsync("Selecione entre seus produtos qual deseja a segunda via: ");
