@@ -1,5 +1,6 @@
 ﻿using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -29,31 +30,44 @@ namespace PortoSeguroBOT.Bean
             user.NumeroCPF = CPF.Substring(0, 9);
             user.DigitoCPF = CPF.Substring(9, 2);
             dynamic dados = GetUserData(user.NumeroCPF, user.DigitoCPF);
-            try { 
-                user.Nome = dados.Envelope.Body.obterDocumentosPorCnpjCpfResponse.obterDocumentosPorCnpjCpfReturn.nomePessoa["#text"].Value;
-                user.DataNasc = dados.Envelope.Body.obterDocumentosPorCnpjCpfResponse.obterDocumentosPorCnpjCpfReturn.dataNascimento["#text"].Value;
+            try {
+                dynamic RootNode;
+                if (dados.Envelope.Body.obterDocumentosPorCnpjCpfResponse.obterDocumentosPorCnpjCpfReturn is JArray)
+                {
+                    RootNode = dados.Envelope.Body.obterDocumentosPorCnpjCpfResponse.obterDocumentosPorCnpjCpfReturn[0];
+                }
+                else
+                {
+                    RootNode = dados.Envelope.Body.obterDocumentosPorCnpjCpfResponse.obterDocumentosPorCnpjCpfReturn;
+                }
+                user.Nome = RootNode.nomePessoa["#text"].Value;
+                user.DataNasc = RootNode.dataNascimento["#text"].Value;
                 IList<Produto> prods = new List<Produto>();
-                dynamic prodList = dados.Envelope.Body.obterDocumentosPorCnpjCpfResponse.obterDocumentosPorCnpjCpfReturn.documentoSeguradoServiceVO;
+                dynamic prodList = RootNode.documentoSeguradoServiceVO;
                 foreach (dynamic doc in prodList)
                 {
-                    Produto p = new Produto();
-                    p.Codigo = Convert.ToInt32(doc.codigoProdutoUnificacao.Value);
-                    p.Nome = doc.produto.Value;
-                    if(p.Codigo == 5) {
-                        p.NumeroApolice = Convert.ToInt32(doc.chaveDocumentoVO.valorDocumento.Value);
-                    }
-                    else
+                   // user.DataNasc.Date.Equals(dt.Date)
+                    if (doc.finalVigencia >= DateTime.Now)
                     {
-                        foreach (dynamic key in doc.chaveDocumentoVO)
-                        {
-                            if ("sucursal".Equals(key.chaveDocumento.Value)) p.Sucursal = Convert.ToInt32(key.valorDocumento.Value);
-                            else if ("ramo".Equals(key.chaveDocumento.Value)) p.Ramo = Convert.ToInt32(key.valorDocumento.Value);
-                            else if ("apolice".Equals(key.chaveDocumento.Value)) p.NumeroApolice = Convert.ToInt32(key.valorDocumento.Value);
-                            else if ("item".Equals(key.chaveDocumento.Value)) p.Item = Convert.ToInt32(key.valorDocumento.Value);
+                        Produto p = new Produto();
+                        p.Codigo = Convert.ToInt32(doc.codigoProdutoUnificacao.Value);
+                        p.Nome = doc.produto.Value;
+                        if (doc.chaveDocumentoVO is JArray) {
+                            foreach (dynamic key in doc.chaveDocumentoVO)
+                            {
+                                if ("sucursal".Equals(key.chaveDocumento.Value)) p.Sucursal = Convert.ToInt32(key.valorDocumento.Value);
+                                else if ("ramo".Equals(key.chaveDocumento.Value)) p.Ramo = Convert.ToInt32(key.valorDocumento.Value);
+                                else if ("apolice".Equals(key.chaveDocumento.Value)) p.NumeroApolice = Convert.ToInt32(key.valorDocumento.Value);
+                                else if ("item".Equals(key.chaveDocumento.Value)) p.Item = Convert.ToInt32(key.valorDocumento.Value);
+                            }
                         }
-                    }
+                        else
+                        {
+                            p.NumeroApolice = Convert.ToInt32(doc.chaveDocumentoVO.valorDocumento.Value);
+                        }
                    
-                    prods.Add(p);
+                        prods.Add(p);
+                    }
                 }
                 user.Produtos = prods;
                 return user;
