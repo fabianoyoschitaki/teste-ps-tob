@@ -24,10 +24,11 @@ namespace PortoSeguroBOT
         public static string tex;
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
         {
+
             if (activity.Type == ActivityTypes.ConversationUpdate)
             {
                 ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
-               
+
                 Usuario user = new Usuario();
                 Activity reply = null;
                 StateClient stateClient = activity.GetStateClient();
@@ -42,11 +43,12 @@ namespace PortoSeguroBOT
                 {
                     reply = activity.CreateReply("Benvindo a Porto Seguro, como podemos te ajudar? ");
                 }
+                
                 await connector.Conversations.ReplyToActivityAsync(reply);
             }
             else if (activity.Type == ActivityTypes.Message)
             {
-                    await Conversation.SendAsync(activity, () => new RootLuisDialog());
+                await Conversation.SendAsync(activity, () => new RootLuisDialog());
             }
             else
             {
@@ -63,12 +65,6 @@ namespace PortoSeguroBOT
             {
                 // Implement user deletion here
                 // If we handle user deletion, return a real message
-            }
-            else if (message.Type == ActivityTypes.ConversationUpdate)
-            {
-                // Handle conversation state changes, like members being added and removed
-                // Use Activity.MembersAdded and Activity.MembersRemoved and Activity.Action for info
-                // Not available in all channels
             }
             else if (message.Type == ActivityTypes.ContactRelationUpdate)
             {

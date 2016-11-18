@@ -19,6 +19,10 @@ namespace PortoSeguroBOT.Dialogs
     public class BoletoLuisDialog : LuisDialog<object>
     {
         [LuisIntent("GerarSegundaViaBoleto")]
+        [LuisIntent("GerarSegundaViaBoletoRE")]
+        [LuisIntent("GerarSegundaViaBoletoSaude")]
+        [LuisIntent("GerarSegundaViaBoletoCredito")]
+        [LuisIntent("GerarSegundaViaBoletoAuto")]
         public async Task GerarSegundaViaBoletoAsync(IDialogContext context, LuisResult result)
         {
             Usuario user = new Usuario();

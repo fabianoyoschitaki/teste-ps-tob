@@ -3,6 +3,7 @@ using Microsoft.Bot.Builder.FormFlow;
 using Microsoft.Bot.Builder.Luis;
 using Microsoft.Bot.Builder.Luis.Models;
 using Microsoft.Bot.Connector;
+using PortoSeguroBOT.Bean;
 using PortoSeguroBOT.Helpers;
 using System;
 using System.Collections.Generic;
@@ -49,10 +50,35 @@ namespace PortoSeguroBOT.Dialogs
             }
         }
 
+        [LuisIntent("Saudacao")]
+        public async Task SaudacaoAsync(IDialogContext context, LuisResult result)
+        {
+            Usuario user = new Usuario();
+            if (context.UserData.TryGetValue("UserData", out user))
+            {
+                string UserFirstName = Formatters.Capitalize(user.Nome).Split()[0];
+                await context.PostAsync($"Benvindo a Porto Seguro {UserFirstName}, como podemos te ajudar? ");
+            }
+            else
+            {
+                await context.PostAsync("Benvindo a Porto Seguro, como podemos te ajudar? ");
+            }
+
+            context.Wait(MessageReceived);
+        }
+
+        [LuisIntent("Despedida")]
+        public async Task DespedidaAsync(IDialogContext context, LuisResult result)
+        {
+            await context.PostAsync("Ok, até mais! Se precisar de alguma coisa é só falar!");
+            context.Wait(MessageReceived);
+        }
+
         [LuisIntent("None")]
         [LuisIntent("")]
         public async Task NoneAsync(IDialogContext context, LuisResult result)
         {
+            //await context.PostAsync($"Não entendeu: {userToBotText}");
             await context.PostAsync("Desculpe, eu não entendi....");
             context.UserData.RemoveValue("SourceDialog");
             context.Wait(MessageReceived);

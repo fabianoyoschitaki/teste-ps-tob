@@ -39,8 +39,8 @@ namespace PortoSeguroBOT.Bean
         {
 
             StringBuilder URL = new StringBuilder();
-            //URL.Append("https://wwws.portoseguro.com.br/vendaonline/viagem/valorseguroajax.ns?codigoAtendimento=&calculo.isObjetoClonado=false&codigoOperacao=525-A&calculo.codigoOperacao=525-A&codigoCanal=1&codigoCampanha=99999&codigoSusepCorretor=&calculo.susepCorretorWeb=&calculo.browserType=Mozilla%2F5.0+(Windows+NT+6.1%3B+WOW64)+AppleWebKit%2F537.36+(KHTML%2C+like+Gecko)+Chrome%2F50.0.2661.102+Safari%2F537.36");
-            URL.Append("http://li102/vendaonline/viagem/valorseguroajax.ns?codigoAtendimento=&calculo.isObjetoClonado=false&codigoOperacao=525-A&calculo.codigoOperacao=525-A&codigoCanal=1&codigoCampanha=99999&codigoSusepCorretor=&calculo.susepCorretorWeb=&calculo.browserType=Mozilla%2F5.0+(Windows+NT+6.1%3B+WOW64)+AppleWebKit%2F537.36+(KHTML%2C+like+Gecko)+Chrome%2F50.0.2661.102+Safari%2F537.36");
+            URL.Append("https://wwws.portoseguro.com.br/vendaonline/viagem/valorseguroajax.ns?codigoAtendimento=&calculo.isObjetoClonado=false&codigoOperacao=525-A&calculo.codigoOperacao=525-A&codigoCanal=1&codigoCampanha=99999&codigoSusepCorretor=&calculo.susepCorretorWeb=&calculo.browserType=Mozilla%2F5.0+(Windows+NT+6.1%3B+WOW64)+AppleWebKit%2F537.36+(KHTML%2C+like+Gecko)+Chrome%2F50.0.2661.102+Safari%2F537.36");
+            //URL.Append("http://li102/vendaonline/viagem/valorseguroajax.ns?codigoAtendimento=&calculo.isObjetoClonado=false&codigoOperacao=525-A&calculo.codigoOperacao=525-A&codigoCanal=1&codigoCampanha=99999&codigoSusepCorretor=&calculo.susepCorretorWeb=&calculo.browserType=Mozilla%2F5.0+(Windows+NT+6.1%3B+WOW64)+AppleWebKit%2F537.36+(KHTML%2C+like+Gecko)+Chrome%2F50.0.2661.102+Safari%2F537.36");
 
             URL.Append("&calculo.codigoUfOrigem=");
             URL.Append(this.UfOrigem);
@@ -87,16 +87,23 @@ namespace PortoSeguroBOT.Bean
             HttpWebRequest request = WebRequest.Create(URL.ToString()) as HttpWebRequest;
             request.ContentType = "application/json; charset=utf-8";
 
-            dynamic objJson;
+            dynamic objJson = null;
 
-            // Get response  
-            using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+            try
             {
-                // Get the response stream  
-                StreamReader reader = new StreamReader(response.GetResponseStream());
-                string JSON = reader.ReadToEnd();
-                objJson = JsonConvert.DeserializeObject(JSON);
+                 // Get response  
+                using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+                {
+                    // Get the response stream  
+                    StreamReader reader = new StreamReader(response.GetResponseStream());
+                    string JSON = reader.ReadToEnd();
+                    objJson = JsonConvert.DeserializeObject(JSON);
                 
+                }
+            }
+            catch (Exception e)
+            {
+
             }
 
             return objJson;
