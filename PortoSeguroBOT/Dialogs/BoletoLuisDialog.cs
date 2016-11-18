@@ -18,6 +18,8 @@ namespace PortoSeguroBOT.Dialogs
     [Serializable]
     public class BoletoLuisDialog : LuisDialog<object>
     {
+        private static readonly log4net.ILog logNone = log4net.LogManager.GetLogger("BotRollingFileLoggerNone");
+
         [LuisIntent("GerarSegundaViaBoleto")]
         [LuisIntent("GerarSegundaViaBoletoRE")]
         [LuisIntent("GerarSegundaViaBoletoSaude")]
@@ -167,6 +169,7 @@ namespace PortoSeguroBOT.Dialogs
         [LuisIntent("")]
         public async Task NoneAsync(IDialogContext context, LuisResult result)
         {
+            logNone.Info(this.GetType().Name + "-None: " + userToBotText);
             //await context.PostAsync("[BoletoLuisDialog] Desculpe, eu não entendi.");
             context.UserData.SetValue("SourceDialog", "BoletoLuisDialog");
             await context.Forward(new RootLuisDialog(), null, new Activity { Text = userToBotText }, System.Threading.CancellationToken.None);            

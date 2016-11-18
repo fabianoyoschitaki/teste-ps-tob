@@ -21,8 +21,7 @@ namespace PortoSeguroBOT
     public class MessagesController : ApiController
     {
         //log4net
-        private static readonly log4net.ILog log =
-            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public static string tex;
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
@@ -42,11 +41,12 @@ namespace PortoSeguroBOT
                     string UserFirstName = Formatters.Capitalize(user.Nome).Split( )[0];
                     messageToReply = $"Benvindo a Porto Seguro {UserFirstName}, como podemos te ajudar? ";                    
                 }
-                log.Info(messageToReply);
+                log.Info("Bot para [" + activity.From.Id + "]: " + messageToReply);
                 await connector.Conversations.ReplyToActivityAsync(activity.CreateReply(messageToReply));
             }
             else if (activity.Type == ActivityTypes.Message)
             {
+                log.Info("Usuário [" + activity.From.Id + "]: " + activity.Text);
                 await Conversation.SendAsync(activity, () => new RootLuisDialog());
             }
             else
