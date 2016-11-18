@@ -22,7 +22,7 @@ namespace PortoSeguroBOT
     {
         //log4net
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
+        
         public static string tex;
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
         {

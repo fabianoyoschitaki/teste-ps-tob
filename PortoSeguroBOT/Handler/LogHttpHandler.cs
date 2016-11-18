@@ -29,6 +29,7 @@ namespace PortoSeguroBOT.Handler
             }
             catch (Exception e)
             {
+                logStr = e.Message;
             }
 
             HttpResponse response = context.Response;
