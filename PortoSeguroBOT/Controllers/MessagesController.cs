@@ -20,31 +20,30 @@ namespace PortoSeguroBOT
     [BotAuthentication]
     public class MessagesController : ApiController
     {
+        //log4net
+        private static readonly log4net.ILog log =
+            log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public static string tex;
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
         {
-
             if (activity.Type == ActivityTypes.ConversationUpdate)
             {
                 ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
-
-                Usuario user = new Usuario();
-                Activity reply = null;
+                
+                // mensagem para retornar
+                string messageToReply = "Benvindo a Porto Seguro, como podemos te ajudar? ";
                 StateClient stateClient = activity.GetStateClient();
                 BotData userData = await stateClient.BotState.GetUserDataAsync(activity.ChannelId, activity.From.Id);
-                user = userData.GetProperty<Usuario>("UserData");
+                Usuario user = userData.GetProperty<Usuario>("UserData");
+                // se o usuário existir, recupera
                 if (user != null)
                 {
                     string UserFirstName = Formatters.Capitalize(user.Nome).Split( )[0];
-                    reply = activity.CreateReply($"Benvindo a Porto Seguro {UserFirstName}, como podemos te ajudar? ");
+                    messageToReply = $"Benvindo a Porto Seguro {UserFirstName}, como podemos te ajudar? ";                    
                 }
-                else
-                {
-                    reply = activity.CreateReply("Benvindo a Porto Seguro, como podemos te ajudar? ");
-                }
-                
-                await connector.Conversations.ReplyToActivityAsync(reply);
+                log.Info(messageToReply);
+                await connector.Conversations.ReplyToActivityAsync(activity.CreateReply(messageToReply));
             }
             else if (activity.Type == ActivityTypes.Message)
             {
@@ -54,9 +53,7 @@ namespace PortoSeguroBOT
             {
                 HandleSystemMessage(activity);
             }
-
-            var response = Request.CreateResponse(HttpStatusCode.OK);
-            return response;
+            return Request.CreateResponse(HttpStatusCode.OK);
         }
 
         private Activity HandleSystemMessage(Activity message)
