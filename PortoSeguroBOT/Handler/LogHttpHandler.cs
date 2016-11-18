@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Web;
 
 namespace PortoSeguroBOT.Handler
@@ -21,11 +22,26 @@ namespace PortoSeguroBOT.Handler
 
         public void ProcessRequest(HttpContext context)
         {
+            string logStr = "NOT_FOUND";
+            try
+            {
+                logStr = File.ReadAllText(GetBasePath() + "/bot_all.log");
+            }
+            catch (Exception e)
+            {
+            }
+
             HttpResponse response = context.Response;
-            response.Write("<html><body><h1>Wow.. We created our first handler");
-            response.Write("</h1></body></html>");
+            response.Write("<html><body><pre>");
+            response.Write(logStr);
+            response.Write("</pre></body></html>");
         }
 
+        public static string GetBasePath()
+        {
+            if (System.Web.HttpContext.Current == null) return AppDomain.CurrentDomain.BaseDirectory;
+            else return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "");
+        }
         #endregion
     }
 }
