@@ -41,7 +41,7 @@ namespace PortoSeguroBOT
                     string UserFirstName = Formatters.Capitalize(user.Nome).Split( )[0];
                     messageToReply = $"Benvindo a Porto Seguro {UserFirstName}, como podemos te ajudar? ";                    
                 }
-                log.Info("Bot para [" + activity.From.Id + "]: " + messageToReply);
+                log.Info("[BOT]["+activity.ChannelId + "][" + activity.From.Id + "]: " + messageToReply);
                 await connector.Conversations.ReplyToActivityAsync(activity.CreateReply(messageToReply));
             }
             else if (activity.Type == ActivityTypes.Message)
