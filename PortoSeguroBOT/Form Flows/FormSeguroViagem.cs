@@ -110,7 +110,7 @@ namespace PortoSeguroBOT.Form_Flows
                 await context.PostAsync($"Aguarde um momento enquanto calculamos seu seguro.");
             };
 
-            return new FormBuilder<FormSeguroViagem>()
+            return FormUtils.CreateCustomForm<FormSeguroViagem>()
                 .Field(nameof(TempOrigem), active: alwaysFalse) //Precisa Incluir esse Field para ter visibilidade
                 .Field(nameof(TempDestino), active: alwaysFalse) //Precisa Incluir esse Field para ter visibilidade
                 .Field(nameof(confirmaEstado), active: HasOrign)
@@ -231,25 +231,17 @@ namespace PortoSeguroBOT.Form_Flows
                 Value = value
             };
 
-            if ("SAIR".Equals(value.ToString(), StringComparison.InvariantCultureIgnoreCase))
+            Estado estado = GetEstado(value.ToString());
+            if (estado == null)
             {
-                //throw new Form
+                result.Feedback = "Desculpe, esse não é um estado brasileiro válido, digite um estado ou SAIR para cancelar a contação.";
+                result.IsValid = false;
             }
             else
             {
-                Estado estado = GetEstado(value.ToString());
-                if (estado == null)
-                {
-                    result.Feedback = "Desculpe, esse não é um estado brasileiro válido, digite um estado ou SAIR para cancelar a contação.";
-                    result.IsValid = false;
-                }
-                else
-                {
-                    result.Value = estado.Descricao;
-                    state.Origem = estado.Descricao;
-                    state.confirmaEstado = SimNao.Sim;
-                }
-
+                result.Value = estado.Descricao;
+                state.Origem = estado.Descricao;
+                state.confirmaEstado = SimNao.Sim;
             }
             return Task.FromResult(result);
         }

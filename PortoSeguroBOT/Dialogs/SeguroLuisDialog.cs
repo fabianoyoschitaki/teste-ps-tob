@@ -30,9 +30,9 @@ namespace PortoSeguroBOT.Dialogs
             {
                 data.Add(dt.Type, dt.Entity);
             }
+
             var SeguroForms = new FormDialog<FormSeguroViagem>(new FormSeguroViagem(data), FormSeguroViagem.SeguroBuildForm, FormOptions.PromptInStart);
             context.Call(SeguroForms, this.callbackFormViagem);
-
             //context.Wait(MessageReceived);
         }
 
@@ -48,21 +48,40 @@ namespace PortoSeguroBOT.Dialogs
 
         private async Task callbackFormViagem(IDialogContext context, IAwaitable<object> result)
         {
-            SeguroViagem seguro;
-            if (context.UserData.TryGetValue("DadosSeguroViagem", out seguro))
+            try
             {
-                var reply = context.MakeMessage();
-                reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-                reply.Attachments =  seguro.GetCardsAttachments();
+                var cotacaoSeguro = await result;
+                SeguroViagem seguro;
+                if (context.UserData.TryGetValue("DadosSeguroViagem", out seguro))
+                {
+                    var reply = context.MakeMessage();
+                    reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+                    reply.Attachments = seguro.GetCardsAttachments();
+                    await context.PostAsync(reply);
+                    //await context.PostAsync("[SeguroLuisDialog] Voltei do Formulário de Viagem");
+                }
+                else
+                {
+                    await context.PostAsync("[SeguroLuisDialog] Não encontrei dados para essa Cotação");
+                }
+                context.Wait(MessageReceived);
+            }
+            catch (FormCanceledException e)
+            {
+                string reply;
+                if (e.InnerException == null)
+                {
+                    reply = $"Você cancelou a operação no passo {e.Last}. Posso te ajudar em algo mais?";
+                }
+                else
+                {
+                    reply = $"Ops! Tivemos um problema :(. Detalhes Técnicos: {e.InnerException.Message}";
+                }
+
                 await context.PostAsync(reply);
-                //await context.PostAsync("[SeguroLuisDialog] Voltei do Formulário de Viagem");
+                context.Wait(this.MessageReceived);
             }
-            else
-            {
-                await context.PostAsync("[SeguroLuisDialog] Não encontrei dados para essa Cotação");
-            }
-          
-            context.Wait(MessageReceived);
+
         }
 
         private string userToBotText;

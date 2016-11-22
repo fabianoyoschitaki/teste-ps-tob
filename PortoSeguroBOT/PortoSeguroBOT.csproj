@@ -135,8 +135,8 @@
     <Compile Include="Dialogs\RootLuisDialog.cs" />
     <Compile Include="Dialogs\SeguroLuisDialog.cs" />
     <Compile Include="Dialogs\BoletoLuisDialog.cs" />
-    <Compile Include="Exceptions\FormCanceledException.cs" />
     <Compile Include="Form Flows\FormSeguroViagem.cs" />
+    <Compile Include="Form Flows\FormUtils.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
