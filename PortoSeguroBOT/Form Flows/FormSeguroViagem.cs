@@ -231,19 +231,26 @@ namespace PortoSeguroBOT.Form_Flows
                 Value = value
             };
 
-            Estado estado = GetEstado(value.ToString());
-            if (estado == null)
+            if ("SAIR".Equals(value.ToString(), StringComparison.InvariantCultureIgnoreCase))
             {
-                result.Feedback = "Estado Inválido";
-                result.IsValid = false;
+                //throw new Form
             }
             else
             {
-                result.Value = estado.Descricao;
-                state.Origem = estado.Descricao;
-                state.confirmaEstado = SimNao.Sim;
-            }
+                Estado estado = GetEstado(value.ToString());
+                if (estado == null)
+                {
+                    result.Feedback = "Desculpe, esse não é um estado brasileiro válido, digite um estado ou SAIR para cancelar a contação.";
+                    result.IsValid = false;
+                }
+                else
+                {
+                    result.Value = estado.Descricao;
+                    state.Origem = estado.Descricao;
+                    state.confirmaEstado = SimNao.Sim;
+                }
 
+            }
             return Task.FromResult(result);
         }
 

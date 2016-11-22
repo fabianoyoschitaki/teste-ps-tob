@@ -21,6 +21,32 @@ namespace PortoSeguroBOT.Dialogs
         private static readonly log4net.ILog logNone = log4net.LogManager.GetLogger("BotRollingFileLoggerNone");
 
         [LuisIntent("ContratarSeguro")]
+        [LuisIntent("HealthForPets")]
+        [LuisIntent("SolicitarBoleto")]
+        [LuisIntent("Saudacao")]
+        [LuisIntent("Despedida")]
+        public async Task RootAsync(IDialogContext context, LuisResult result)
+        {
+            switch (result.Intents[0].Intent)
+            {
+                case "ContratarSeguro":
+                    await this.SeguroAsync(context, result);
+                    break;
+                case "SolicitarBoleto":
+                    await this.BoletoAsync(context, result);
+                    break;
+                case "Saudacao":
+                    await this.SaudacaoAsync(context, result);
+                    break;
+                case "Despedida":
+                    await this.DespedidaAsync(context, result);
+                    break;
+                case "HealthForPets":
+                    await this.HealthForPetsAsync(context, result);
+                    break;
+            }
+        }
+
         public async Task SeguroAsync(IDialogContext context, LuisResult result)
         {
             //await context.PostAsync("[RootLuisDialog] Entendi que deseja contratar um seguro");
@@ -36,7 +62,6 @@ namespace PortoSeguroBOT.Dialogs
             }
         }
 
-        [LuisIntent("SolicitarBoleto")]
         public async Task BoletoAsync(IDialogContext context, LuisResult result)
         {
             string sourceDialog;
@@ -53,7 +78,6 @@ namespace PortoSeguroBOT.Dialogs
             }
         }
 
-        [LuisIntent("Saudacao")]
         public async Task SaudacaoAsync(IDialogContext context, LuisResult result)
         {
             Usuario user = new Usuario();
@@ -70,10 +94,16 @@ namespace PortoSeguroBOT.Dialogs
             context.Wait(MessageReceived);
         }
 
-        [LuisIntent("Despedida")]
         public async Task DespedidaAsync(IDialogContext context, LuisResult result)
         {
             await context.PostAsync("Ok, até mais! Se precisar de alguma coisa é só falar!");
+            context.Wait(MessageReceived);
+        }
+
+        public async Task HealthForPetsAsync(IDialogContext context, LuisResult result)
+        {
+            await context.PostAsync("Saiba mais sobre saúde para o seu cão no Portal do Health For Pets"); 
+            await context.PostAsync("Acesse https://health4pet.com.br/ e confira");
             context.Wait(MessageReceived);
         }
 
