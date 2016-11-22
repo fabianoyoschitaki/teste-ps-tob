@@ -142,6 +142,7 @@
     </Compile>
     <Compile Include="Handler\LogNoneHttpHandler.cs" />
     <Compile Include="Handler\LogHttpHandler.cs" />
+    <Compile Include="Handler\RESTHandler.cs" />
     <Compile Include="Helpers\Constants.cs" />
     <Compile Include="Helpers\ConstantsBase.cs" />
     <Compile Include="Helpers\ConstantsPais.cs" />

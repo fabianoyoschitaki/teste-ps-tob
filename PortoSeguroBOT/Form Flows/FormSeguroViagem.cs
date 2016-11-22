@@ -326,6 +326,13 @@ namespace PortoSeguroBOT.Form_Flows
                 Value = value
             };
             int newValue;
+
+            if ("nenhum".Equals(value.ToString(), StringComparison.CurrentCultureIgnoreCase))
+            {
+                value = 0;
+                result.Value = "0";
+            }
+
             if (!int.TryParse(value.ToString(), out newValue))
             {
                 result.Feedback = "Não entendi a sua resposta";
