@@ -6,6 +6,7 @@ namespace PortoSeguroBOT.Handler
 {
     public class LogHttpHandler : IHttpHandler
     {
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         /// <summary>
         /// You will need to configure this handler in the Web.config file of your 
         /// web and register it with IIS before being able to use it. For more information
@@ -31,11 +32,9 @@ namespace PortoSeguroBOT.Handler
             {
                 logStr = e.Message;
             }
-
-            HttpResponse response = context.Response;
-            response.Write("<html><body><pre>");
-            response.Write(logStr);
-            response.Write("</pre></body></html>");
+            context.Response.Write("<html><body><pre>");
+            context.Response.Write(logStr);
+            context.Response.Write("</pre></body></html>");
         }
 
         public static string GetBasePath()
