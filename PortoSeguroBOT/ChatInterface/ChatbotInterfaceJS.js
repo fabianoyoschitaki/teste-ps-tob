@@ -1,19 +1,6 @@
-﻿function manageSubmitText(txt) {
-    var val = $.trim($(".chatInput").val());
-    if(val.length > 0) {
-        var msgWrapper = $("<div class='chatMessageWrapper chatMessageSenderWrapper'>");
-        var msgDiv = $("<div class='chatMessageDiv chatMessageSender'>");
-        var msg = $("<span>").text(val);
-        $(msg).appendTo(msgDiv);
-        $(msgDiv).appendTo(msgWrapper);
-        $(msgWrapper).appendTo(".chatContentMsgWrapper");
-        $(".chatContentMsgWrapper")[0].scrollTop = $(".chatContentMsgWrapper")[0].scrollHeight;
-        $(".chatInput").val("");
-    } else {
-        $(".chatInput").val("");
-    }
-}
-
+﻿var conversationId = "";
+var conversationToken = "";
+var watermark = 0;
 $(function () {
     $(".chatInput").keydown(function (e) {
         if (e.keyCode == "13") {
@@ -26,4 +13,82 @@ $(function () {
         manageSubmitText();
         $(".chatInput").focus();
     })
+
+    getTokens();
 })
+
+function getTokens() {
+    var xhr = $.ajax({
+        url: "http://localhost:3979/rest/getToken",
+        type: "POST",
+        data: "",
+        timeout: 5000,
+        contentType: "application/json",
+        success: function(data) {
+            conversationId = data.ConversationId;
+            conversationToken = data.ConversationToken;
+            watermark = data.WaterMark;
+            window.setTimeout(function () { getBotMessage(); }, 2000);
+        },
+        error: function(data) { }
+    });
+}
+
+function getBotMessage() {
+    var xhr = $.ajax({
+        url: "http://localhost:3979/rest/botToUser/" + conversationId + "/" + watermark,
+        type: "POST",
+        data: "",
+        timeout: 5000,
+        contentType: "application/json",
+        success: function (data) {
+            for (var msg = 0; msg < data.Messages.length; msg++) {
+                generateBotMsg(data.Messages[msg].Text);
+            }
+        },
+        error: function (data) { }
+    });
+}
+
+function sendMessageToBot(txt) {
+    var xhr = $.ajax({
+        url: "http://localhost:3979/rest/userToBot/" + conversationId,
+        type: "POST",
+        data: "",
+        timeout: 5000,
+        contentType: "application/json",
+        success: function (data) {
+            getBotMessage();
+        },
+        error: function (data) { }
+    });
+}
+
+function manageSubmitText() {
+    var val = $.trim($(".chatInput").val());
+    if (val.length > 0) {
+        var msgWrapper = $("<div class='chatMessageWrapper chatMessageSenderWrapper'>");
+        var msgDiv = $("<div class='chatMessageDiv chatMessageSender'>");
+        var msg = $("<span>").text(val);
+        $(msg).appendTo(msgDiv);
+        $(msgDiv).appendTo(msgWrapper);
+        $(msgWrapper).appendTo(".chatContentMsgWrapper");
+        $(".chatContentMsgWrapper")[0].scrollTop = $(".chatContentMsgWrapper")[0].scrollHeight;
+        $(".chatInput").val("");
+        sendMessageToBot(val);
+    } else {
+        $(".chatInput").val("");
+    }
+}
+
+function generateBotMsg(txt) {
+    if (txt.length > 0) {
+        var msgWrapper = $("<div class='chatMessageWrapper chatMessageReceiverWrapper'>");
+        var msgDiv = $("<div class='chatMessageDiv chatMessageReceiver'>");
+        var msg = $("<span>").text(txt);
+        $(msg).appendTo(msgDiv);
+        $(msgDiv).appendTo(msgWrapper);
+        $(msgWrapper).appendTo(".chatContentMsgWrapper");
+        $(".chatContentMsgWrapper")[0].scrollTop = $(".chatContentMsgWrapper")[0].scrollHeight;
+    }
+}

@@ -15,5 +15,7 @@ namespace PortoSeguroBOT.Helpers
         public const string UsernameKey = "UserName";
         public const string currentIntentKey = "currentIntent";
         public const string seguroKey = "tipoSeguro";
+
+        public const string DirectLineApi = "EJISTdxQzqU.cwA.G6U.KwVDwRlMeOpgxYp3Ky_wylE8UaCWLf3p_2uy1kOtF9g";
     }
 }

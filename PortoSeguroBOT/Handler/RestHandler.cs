@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PortoSeguroBOT.ChatInterface.DirectLineAPI;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,89 +26,73 @@ namespace PortoSeguroBOT.Handler
             HttpRequest Request = context.Request;
             HttpResponse Response = context.Response;
 
-            if (Request.RequestType == "GET")
+            string RawUrl = Request.RawUrl;
+            string splitter = "/?";
+            string SubRawUrl = RawUrl.Substring(RawUrl.IndexOf(splitter) + splitter.Length);
+            string[] Parameters = SubRawUrl.Split('/');
+            JavaScriptSerializer jc = new JavaScriptSerializer();
+            DirectLineApi apiData = new DirectLineApi();
+            
+            if (Request.RequestType == "POST")
             {
-
-                //RawUrl=http://localhost/Services.fck/?Vivek/Gupta
-                string RawUrl = Request.RawUrl;
-                string splitter = "/?";
-                string SubRawUrl = RawUrl.Substring(RawUrl.IndexOf(splitter) + splitter.Length);
-
-                string[] Parameters = SubRawUrl.Split('/');
-                if (Parameters.Length >= 2)
+                if (Request.ContentType.Contains("application/json"))
                 {
-                    string name = Parameters[0];
-                    string surname = Parameters[1];
-                    string res = string.Format("Welcome {0} {1}", name, surname);
-                    JavaScriptSerializer jc = new JavaScriptSerializer();
-                    StringBuilder sb = new StringBuilder();
-                    jc.Serialize(res, sb);
-                    Response.Write(sb.ToString());
-                    Response.ContentType = "application/json";
+                    if ("getToken".Equals(Parameters[1]))
+                    {
+                       
+                        try
+                        {
+                            dynamic tokenData = apiData.getDirectLineToken();
+                            apiData.ConversationId = tokenData.conversationId;
+                            apiData.ConversationToken = tokenData.token;
+                        }
+                        catch (Exception e)
+                        {
+
+                        }
+                        Response.Write(jc.Serialize(apiData));
+                        Response.ContentType = "application/json";
+                    }
+                    else if ("botToUser".Equals(Parameters[1]))
+                    {
+                        try
+                        {
+                            Conversation conv = apiData.getConversation(Parameters[2],Parameters[3]);
+                            Response.Write(jc.Serialize(conv));
+                            Response.ContentType = "application/json";
+                        }
+                        catch (Exception e)
+                        {
+                            Response.Write("");
+                            Response.ContentType = "application/json";
+                        }
+                    }
+                    else if ("userToBot".Equals(Parameters[1]))
+                    {
+                        try
+                        {
+                            string msg;
+                            using (var reader = new StreamReader(Request.InputStream))
+                            {
+                                msg = reader.ReadToEnd();
+                            }
+                            apiData.sendMsgToBot(Parameters[2], msg);
+                            Response.Write(jc.Serialize("{success:true}"));
+                            Response.ContentType = "application/json";
+                        }
+                        catch (Exception e)
+                        {
+                            Response.Write(jc.Serialize("{success:false}"));
+                            Response.ContentType = "application/json";
+                        }
+                    }
                 }
             }
-            else if (Request.RequestType == "POST")
-            {
-
-                if (Request.ContentType.Contains("text/xml"))
-                {
-                    Request.InputStream.Seek(0, SeekOrigin.Begin);
-                    XmlDocument xm = new XmlDocument();
-                    xm.Load(Request.InputStream);
-
-                    output.name = xm.DocumentElement["name"].InnerText;
-                    output.surname = xm.DocumentElement["surname"].InnerText;
-
-                    XmlSerializer xr = new XmlSerializer(typeof(output));
-                    MemoryStream mr = new MemoryStream();
-                    xr.Serialize(mr, new output());
-                    byte[] OutXmlByte = mr.ToArray();
-
-                    Response.OutputStream.Write(OutXmlByte, 0, OutXmlByte.Length);
-                    Response.ContentType = "text/xml";
-                }
-                else if (Request.ContentType.Contains("application/json"))
-                {
-                    string data = Encoding.UTF8.GetString(Request.BinaryRead(Request.TotalBytes));
-                    JavaScriptSerializer jc = new JavaScriptSerializer();
-                    Dictionary<string, string> keyValue = jc.Deserialize<Dictionary<string, string>>(data);
-
-                    output.name = keyValue["name"];
-                    output.surname = keyValue["surname"];
-
-                    Response.Write(jc.Serialize(new output()));
-                    Response.ContentType = "application/json";
-                }
-                else if (Request.ContentType.Contains("text/plain"))
-                {
-                    string data = Encoding.UTF8.GetString(Request.BinaryRead(Request.TotalBytes));
-                    string[] keyValue = data.Split(',');
-
-                    output.name = keyValue[0];
-                    output.surname = keyValue[1];
-
-                    Response.Write(new output().result);
-                    Response.ContentType = "text/plain";
-                }
-            }
+         
         }
 
         #endregion
 
-        public class output
-        {
-            public output()
-            {
-                result = "Welcome " + name + " " + surname;
-            }
-
-            public string result;
-
-            [NonSerialized]
-            public static string name;
-            [NonSerialized]
-            public static string surname;
-
-        }
+     
     }
 }

@@ -52,6 +52,7 @@
     font-size: 14px;
     font-family: Verdana;
     display: inline-block;
+    border-radius: 5px;
 }
 
 .chatMessageSender {

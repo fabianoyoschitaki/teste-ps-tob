@@ -122,6 +122,7 @@
     <Content Include="ChatInterface\Interface.html" />
     <Content Include="default.htm" />
     <Content Include="Global.asax" />
+    <Content Include="src\img\Logo_Health4Pets.jpg" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -131,6 +132,9 @@
     <Compile Include="Bean\Produto.cs" />
     <Compile Include="Bean\SeguroViagem.cs" />
     <Compile Include="Bean\Usuario.cs" />
+    <Compile Include="ChatInterface\DirectLineAPI\Conversation.cs" />
+    <Compile Include="ChatInterface\DirectLineAPI\DirectLineApi.cs" />
+    <Compile Include="ChatInterface\DirectLineAPI\Message.cs" />
     <Compile Include="Controllers\MessagesController.cs" />
     <Compile Include="Dialogs\RootLuisDialog.cs" />
     <Compile Include="Dialogs\SeguroLuisDialog.cs" />
