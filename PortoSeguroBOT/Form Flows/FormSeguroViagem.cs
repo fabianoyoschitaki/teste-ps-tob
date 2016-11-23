@@ -234,7 +234,7 @@ namespace PortoSeguroBOT.Form_Flows
             Estado estado = GetEstado(value.ToString());
             if (estado == null)
             {
-                result.Feedback = "Desculpe, esse não é um estado brasileiro válido, digite um estado ou SAIR para cancelar a contação.";
+                result.Feedback = "Desculpe, esse não é um estado brasileiro válido, digite um estado ou SAIR para cancelar a cotação.";
                 result.IsValid = false;
             }
             else
@@ -257,7 +257,7 @@ namespace PortoSeguroBOT.Form_Flows
             Pais pais = GetPais(value.ToString());
             if (pais == null)
             {
-                result.Feedback = "Pais Inválido";
+                result.Feedback = "Desculpe, esse não é um estado país válido, digite um país ou SAIR para cancelar a cotação.";
                 result.IsValid = false;
             }
             else
@@ -285,7 +285,7 @@ namespace PortoSeguroBOT.Form_Flows
             }
             if (startDate < DateTime.Today)
             {
-                result.Feedback = "Data inicial inválida";
+                result.Feedback = "Data inicial inválida, digite uma data inicial válida ou SAIR para cancelar a cotação";
                 result.IsValid = false;
             }
             return Task.FromResult(result);
@@ -312,7 +312,7 @@ namespace PortoSeguroBOT.Form_Flows
             }
             if (endDate < startDate)
             {
-                result.Feedback = "Data final inválida";
+                result.Feedback = "Data final inválida, digite uma data final válida ou SAIR para cancelar a cotação";
                 result.IsValid = false;
             }
             return Task.FromResult(result);
@@ -335,14 +335,14 @@ namespace PortoSeguroBOT.Form_Flows
 
             if (!int.TryParse(value.ToString(), out newValue))
             {
-                result.Feedback = "Não entendi a sua resposta";
+                result.Feedback = "Não entendi a sua resposta, digite uma quantidade válida ou SAIR para cancelar a cotação";
                 result.IsValid = false;
             }
             else
             {
                 if(newValue < 0)
                 {
-                    result.Feedback = "Quantidade inválida";
+                    result.Feedback = "Quantidade inválida, digite uma quantidade válida ou SAIR para cancelar a cotação";
                     result.IsValid = false;
                 }
             }
