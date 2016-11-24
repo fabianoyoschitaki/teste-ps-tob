@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Web;
 
 namespace PortoSeguroBOT.ChatInterface.DirectLineAPI
@@ -101,7 +102,7 @@ namespace PortoSeguroBOT.ChatInterface.DirectLineAPI
 
         }
 
-        public Conversation sendMsgToBot(string ConversationID, string msg)
+        public void sendMsgToBot(string ConversationID, string msg)
         {
             // Create the web request  
             string URL = "https://directline.botframework.com/api/conversations";
@@ -110,18 +111,16 @@ namespace PortoSeguroBOT.ChatInterface.DirectLineAPI
             URL += "/messages";
 
             HttpWebRequest request = WebRequest.Create(URL.ToString()) as HttpWebRequest;
-            string jsonMsg = "{text:" + msg + ", from:" + ConversationID + "}";
+            string jsonMsg = "{text:\"" + msg + "\", from:\"" + ConversationID + "\"}";
 
-            char[] buffer = jsonMsg.ToCharArray();
+            byte[] buffer = Encoding.ASCII.GetBytes(jsonMsg);
             request.Method = "POST";
-            request.ContentLength = buffer.Length;
             request.ContentType = "application/json; charset=utf-8";
             
-            request.ContentLength = 0;
             request.Headers.Set(HttpRequestHeader.Authorization, "Bearer " + Constants.DirectLineApi);
 
             Stream newStream = request.GetRequestStream();
-            //newStream.Write(buffer, 0, buffer.Length);
+            newStream.Write(buffer, 0, buffer.Length);
             newStream.Close();
 
             dynamic objJson = null;
@@ -135,13 +134,11 @@ namespace PortoSeguroBOT.ChatInterface.DirectLineAPI
                     StreamReader reader = new StreamReader(response.GetResponseStream());
                     string JSON = reader.ReadToEnd();
                     objJson = JsonConvert.DeserializeObject(JSON);
-                   
-                    return conv;
                 }
             }
             catch (Exception e)
             {
-                return null;
+                string err = e.ToString();
             }
 
         }

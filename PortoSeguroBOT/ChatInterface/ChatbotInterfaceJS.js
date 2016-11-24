@@ -19,7 +19,7 @@ $(function () {
 
 function getTokens() {
     var xhr = $.ajax({
-        url: "http://localhost:3979/rest/getToken",
+        url: "../rest/getToken",
         type: "POST",
         data: "",
         timeout: 5000,
@@ -36,14 +36,15 @@ function getTokens() {
 
 function getBotMessage() {
     var xhr = $.ajax({
-        url: "http://localhost:3979/rest/botToUser/" + conversationId + "/" + watermark,
+        url: "../rest/botToUser/" + conversationId + "/" + watermark,
         type: "POST",
         data: "",
-        timeout: 5000,
+        timeout: 10000,
         contentType: "application/json",
         success: function (data) {
             for (var msg = 0; msg < data.Messages.length; msg++) {
                 generateBotMsg(data.Messages[msg].Text);
+                watermark++;
             }
         },
         error: function (data) { }
@@ -52,15 +53,18 @@ function getBotMessage() {
 
 function sendMessageToBot(txt) {
     var xhr = $.ajax({
-        url: "http://localhost:3979/rest/userToBot/" + conversationId,
+        url: "../rest/userToBot/" + conversationId,
         type: "POST",
-        data: "",
-        timeout: 5000,
+        data: "{\"text\":\""+txt+"\"}",
+        timeout: 10000,
         contentType: "application/json",
         success: function (data) {
+            watermark++;
             getBotMessage();
         },
-        error: function (data) { }
+        error: function (data) {
+            console.log(data);
+        }
     });
 }
 

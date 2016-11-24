@@ -119,6 +119,7 @@
   <ItemGroup>
     <Content Include="ChatInterface\ChatbotInterfaceJS.js" />
     <Content Include="ChatInterface\ChatBotInterfaceStyle.css" />
+    <Content Include="ChatInterface\Demo.html" />
     <Content Include="ChatInterface\Interface.html" />
     <Content Include="default.htm" />
     <Content Include="Global.asax" />

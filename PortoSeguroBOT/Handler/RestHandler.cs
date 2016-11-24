@@ -1,4 +1,5 @@
-﻿using PortoSeguroBOT.ChatInterface.DirectLineAPI;
+﻿using Newtonsoft.Json;
+using PortoSeguroBOT.ChatInterface.DirectLineAPI;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -74,7 +75,8 @@ namespace PortoSeguroBOT.Handler
                             string msg;
                             using (var reader = new StreamReader(Request.InputStream))
                             {
-                                msg = reader.ReadToEnd();
+                                dynamic objJson = JsonConvert.DeserializeObject(reader.ReadToEnd());
+                                msg = objJson.text.Value;
                             }
                             apiData.sendMsgToBot(Parameters[2], msg);
                             Response.Write(jc.Serialize("{success:true}"));

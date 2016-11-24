@@ -31,11 +31,11 @@ namespace PortoSeguroBOT.Dialogs
             if (context.UserData.TryGetValue("UserData", out user))
             {
                 string UserFirstName = Formatters.Capitalize(user.Nome).Split()[0];
-                PromptDialog.Text(context, callbackConfirmaData, $"{UserFirstName}, no momento só conseguimos emitir segunda via de boleto do produto Residência para continuarmos nos confirme sua data de nascimento. Caso deseje a segunda via para outro CPF digite OUTRO");
+                PromptDialog.Text(context, callbackConfirmaData, $"{UserFirstName}, para continuarmos nos confirme sua data de nascimento. Caso deseje a segunda via para outro CPF digite OUTRO");
             }
             else
             {
-                PromptDialog.Text(context, callbackBoletoCPF, "No momento só conseguimos emitir segunda via de boleto do produto Residência, caso deseje digite seu CPF");
+                PromptDialog.Text(context, callbackBoletoCPF, "Para continuarmos com a solicitação de segunda via de boleto digite seu CPF");
             }
         }
 
@@ -104,7 +104,7 @@ namespace PortoSeguroBOT.Dialogs
                                 //await context.PostAsync("Vamos listar seus produtos Porto Seguro [Até Aqui]");
                                 if (user.Produtos != null)
                                 {
-                                    await context.PostAsync("Selecione entre seus produtos qual deseja a segunda via: ");
+                                    await context.PostAsync("Selecione entre seus produtos qual deseja solicitar segunda via: ");
                                     List<Attachment> heroCards = new List<Attachment>();
                                     foreach (Produto prod in user.Produtos)
                                     {
@@ -119,7 +119,7 @@ namespace PortoSeguroBOT.Dialogs
                                             Dados,
                                             "",
                                             new CardImage(url: ""),
-                                            new CardAction(ActionTypes.OpenUrl, "Solicitar 2ª Via", value: "https://www.boletobancario.com/boletofacil/img/boleto-facil-exemplo.pdf"))
+                                            new CardAction(ActionTypes.ImBack, "Solicitar 2ª Via", value: prod.Codigo.ToString()))
                                         );
                                     }
                                     var reply = context.MakeMessage();
@@ -153,7 +153,7 @@ namespace PortoSeguroBOT.Dialogs
              }
         }
 
-        private async Task callbackClickProduto(IDialogContext context, IAwaitable<string> result)
+        private async Task callbackProductSelection(IDialogContext context, IAwaitable<string> result)
         {
             try
             {

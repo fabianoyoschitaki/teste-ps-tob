@@ -53,6 +53,11 @@
     font-family: Verdana;
     display: inline-block;
     border-radius: 5px;
+    max-width: calc(100% - 20px);
+}
+
+.chatMessageDiv span {
+    word-wrap: break-word;
 }
 
 .chatMessageSender {

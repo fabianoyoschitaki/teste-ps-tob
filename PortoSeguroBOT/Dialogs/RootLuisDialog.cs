@@ -123,6 +123,14 @@ namespace PortoSeguroBOT.Dialogs
             context.Wait(MessageReceived);
         }
 
+        [LuisIntent("habilidadesBot")]
+        public async Task habilidadesAsync(IDialogContext context, LuisResult result)
+        {
+            await context.PostAsync("No momento eu consigo cotar um seguro para sua viagem e emitir uma segunda via de boleto para o seguro do seu auto. O que deseja fazer?");
+            context.Wait(MessageReceived);
+        }
+
+        [LuisIntent("Negacao")]
         [LuisIntent("None")]
         [LuisIntent("")]
         public async Task NoneAsync(IDialogContext context, LuisResult result)
