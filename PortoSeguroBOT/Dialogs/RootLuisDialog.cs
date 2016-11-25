@@ -26,6 +26,7 @@ namespace PortoSeguroBOT.Dialogs
         [LuisIntent("SolicitarBoleto")]
         [LuisIntent("Saudacao")]
         [LuisIntent("Despedida")]
+        [LuisIntent("Negacao")]
         public async Task RootAsync(IDialogContext context, LuisResult result)
         {
             switch (result.Intents[0].Intent)
@@ -40,6 +41,7 @@ namespace PortoSeguroBOT.Dialogs
                     await this.SaudacaoAsync(context, result);
                     break;
                 case "Despedida":
+                case "Negacao":
                     await this.DespedidaAsync(context, result);
                     break;
                 case "HealthForPets":
@@ -120,6 +122,7 @@ namespace PortoSeguroBOT.Dialogs
             reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
             reply.Attachments = heroCards;
             await context.PostAsync(reply);
+            await context.PostAsync("Podemos te ajudar em mais alguma coisa?");
             context.Wait(MessageReceived);
         }
 
@@ -129,8 +132,7 @@ namespace PortoSeguroBOT.Dialogs
             await context.PostAsync("No momento eu consigo cotar um seguro para sua viagem e emitir uma segunda via de boleto para o seguro do seu auto. O que deseja fazer?");
             context.Wait(MessageReceived);
         }
-
-        [LuisIntent("Negacao")]
+        
         [LuisIntent("None")]
         [LuisIntent("")]
         public async Task NoneAsync(IDialogContext context, LuisResult result)

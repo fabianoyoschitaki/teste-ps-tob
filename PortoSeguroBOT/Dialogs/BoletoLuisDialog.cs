@@ -113,12 +113,21 @@ namespace PortoSeguroBOT.Dialogs
                                         Dados += prod.Ramo != null ? prod.Ramo + "-" : "";
                                         Dados += prod.NumeroApolice;
                                         Dados += prod.Item != null ? "-" + prod.Item:"";
-
+                                        string imgUrl = "";
+                                        switch(prod.Codigo)
+                                        {
+                                            case 1:
+                                                imgUrl = "https://cliente.portoseguro.com.br/static-files/images/Seguro-Auto-atendimento-portal.jpg";
+                                                break;
+                                            default:
+                                                imgUrl = "";
+                                                break;
+                                        }
                                         heroCards.Add(GetHeroCard(
                                             prod.Nome,
                                             Dados,
                                             "",
-                                            new CardImage(url: ""),
+                                            new CardImage(url: imgUrl),
                                             new CardAction(ActionTypes.ImBack, "Solicitar 2ª Via", value: prod.Codigo.ToString()))
                                         );
                                     }
@@ -128,7 +137,7 @@ namespace PortoSeguroBOT.Dialogs
                                     await context.PostAsync(reply);
                                 }
                                 await context.PostAsync("Posso te ajudar em mais alguma coisa?");
-                                context.Wait(MessageReceived);
+                                context.Wait(ProductSelectionCallback);
 
                             }
                             else
@@ -179,6 +188,13 @@ namespace PortoSeguroBOT.Dialogs
         protected async override Task MessageReceived(IDialogContext context, IAwaitable<IMessageActivity> item)
         {
             userToBotText = (await item).Text;
+            await base.MessageReceived(context, item);
+        }
+
+        protected async Task ProductSelectionCallback(IDialogContext context, IAwaitable<IMessageActivity> item)
+        {
+            string codeSelected = (await item).Text;
+            await context.PostAsync($"Você selecionou a Apólice: {codeSelected}");
             await base.MessageReceived(context, item);
         }
 
