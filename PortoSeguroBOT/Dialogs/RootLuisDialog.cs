@@ -108,12 +108,13 @@ namespace PortoSeguroBOT.Dialogs
             await context.PostAsync("Esperamos que esteja tudo bem com seu PET. Saiba mais sobre saúde para o seu pet no Portal do Health For Pets");
             List<Attachment> heroCards = new List<Attachment>();
 
-             var heroCard = new HeroCard
+            var heroCard = new HeroCard
             {
                 Title = "Health For Pets",
                 Subtitle = "Nossa missão é proporcionar a cães e gatos uma vida mais saudável e feliz.",
                 Text = "Acesse e saiba mais",
-                Images = new List<CardImage>() { new CardImage(url: "https://health4pet.com.br/static/images/header_logo.png") },
+                //Images = new List<CardImage>() { new CardImage(url: "https://health4pet.com.br/static/images/header_logo.png") },
+                Images = new List<CardImage>() { new CardImage(url: "") },
                 Buttons = new List<CardAction>() { new CardAction(ActionTypes.OpenUrl, "Acesse", value: "https://health4pet.com.br/") },
             };
             heroCards.Add(heroCard.ToAttachment());

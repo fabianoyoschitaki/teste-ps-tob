@@ -62,7 +62,7 @@ namespace PortoSeguroBOT.Dialogs
                         }
                         else
                         {
-                            await context.PostAsync("Cliente não encontrado");
+                            await context.PostAsync("Desculpe, não localizamos um cliente com esse CPF. Como podemos te ajudar?");
                             context.Wait(MessageReceived);
                         }
                     }
@@ -117,7 +117,8 @@ namespace PortoSeguroBOT.Dialogs
                                         switch(prod.Codigo)
                                         {
                                             case 1:
-                                                imgUrl = "https://cliente.portoseguro.com.br/static-files/images/Seguro-Auto-atendimento-portal.jpg";
+                                                //imgUrl = "https://cliente.portoseguro.com.br/static-files/images/Seguro-Auto-atendimento-portal.jpg";
+                                                imgUrl = "";
                                                 break;
                                             default:
                                                 imgUrl = "";
@@ -128,7 +129,7 @@ namespace PortoSeguroBOT.Dialogs
                                             Dados,
                                             "",
                                             new CardImage(url: imgUrl),
-                                            new CardAction(ActionTypes.ImBack, "Solicitar 2ª Via", value: prod.Codigo.ToString()))
+                                            new CardAction(ActionTypes.PostBack, "Solicitar 2ª Via", value: "ProdCod|" + prod.Codigo.ToString() + "|" + prod.Sucursal.ToString() + "|" + prod.Ramo.ToString() + "|" + prod.NumeroApolice.ToString() + "|" + prod.Item.ToString()))
                                         );
                                     }
                                     var reply = context.MakeMessage();
@@ -136,7 +137,7 @@ namespace PortoSeguroBOT.Dialogs
                                     reply.Attachments = heroCards;
                                     await context.PostAsync(reply);
                                 }
-                                context.Wait(ProductSelectionCallback);
+                                context.Wait(MessageReceived);
 
                             }
                             else
@@ -161,13 +162,6 @@ namespace PortoSeguroBOT.Dialogs
              }
         }
 
-        protected async Task ProductSelectionCallback(IDialogContext context, IAwaitable<IMessageActivity> item)
-        {
-            string codeSelected = (await item).Text;
-            await context.PostAsync($"Você selecionou a Apólice: {codeSelected}");
-            await base.MessageReceived(context, item);
-        }
-
         [LuisIntent("None")]
         [LuisIntent("")]
         public async Task NoneAsync(IDialogContext context, LuisResult result)
@@ -182,8 +176,35 @@ namespace PortoSeguroBOT.Dialogs
         protected async override Task MessageReceived(IDialogContext context, IAwaitable<IMessageActivity> item)
         {
             userToBotText = (await item).Text;
-            await base.MessageReceived(context, item);
-        }
+
+            string codeSelected = userToBotText;
+            if (codeSelected.IndexOf("ProdCod") != -1)
+            {
+                await context.PostAsync($"Aguarde um momento enquanto geramos a segunda via do seu boleto.");
+                try
+                {
+                    string urlToPdf = new Produto().getProdutoSegundaViaURL(codeSelected);
+                    if (urlToPdf == null)
+                    {
+                        await context.PostAsync("Sua apólice não foi emitida com pagamento via boleto.");
+                    }
+                    else
+                    {
+                        await context.PostAsync($"Faça o download do seu boleto clicando aqui: {urlToPdf}");
+                    }
+                }
+                catch (Exception e)
+                {
+                    await context.PostAsync($"Ocorreu um erro ao gerar a segunda via de seu boleto.");
+                }
+                await context.PostAsync("Podemos te ajudar em mais alguma coisa?");
+                context.Wait(MessageReceived);
+            }
+            else
+            {
+                await base.MessageReceived(context, item);
+            }
+         }
 
         public Attachment GetHeroCard(string title, string subtitle, string text, CardImage cardImage, CardAction cardAction)
         {
