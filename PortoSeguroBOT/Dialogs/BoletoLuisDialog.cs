@@ -136,7 +136,6 @@ namespace PortoSeguroBOT.Dialogs
                                     reply.Attachments = heroCards;
                                     await context.PostAsync(reply);
                                 }
-                                await context.PostAsync("Posso te ajudar em mais alguma coisa?");
                                 context.Wait(ProductSelectionCallback);
 
                             }
@@ -162,16 +161,11 @@ namespace PortoSeguroBOT.Dialogs
              }
         }
 
-        private async Task callbackProductSelection(IDialogContext context, IAwaitable<string> result)
+        protected async Task ProductSelectionCallback(IDialogContext context, IAwaitable<IMessageActivity> item)
         {
-            try
-            {
-                var textResult = await result;
-                
-            }
-            catch (TooManyAttemptsException)
-            {
-            }
+            string codeSelected = (await item).Text;
+            await context.PostAsync($"Você selecionou a Apólice: {codeSelected}");
+            await base.MessageReceived(context, item);
         }
 
         [LuisIntent("None")]
@@ -188,13 +182,6 @@ namespace PortoSeguroBOT.Dialogs
         protected async override Task MessageReceived(IDialogContext context, IAwaitable<IMessageActivity> item)
         {
             userToBotText = (await item).Text;
-            await base.MessageReceived(context, item);
-        }
-
-        protected async Task ProductSelectionCallback(IDialogContext context, IAwaitable<IMessageActivity> item)
-        {
-            string codeSelected = (await item).Text;
-            await context.PostAsync($"Você selecionou a Apólice: {codeSelected}");
             await base.MessageReceived(context, item);
         }
 
