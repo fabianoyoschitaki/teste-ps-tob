@@ -62,8 +62,7 @@ namespace PortoSeguroBOT.Dialogs
                         }
                         else
                         {
-                            await context.PostAsync("Desculpe, não localizamos um cliente com esse CPF. Como podemos te ajudar?");
-                            context.Wait(MessageReceived);
+                            PromptDialog.Text(context, callbackBoletoCPF, "Desculpe, não encontramos esse CPF em nossa base de dados, digite novamente o CPF ou SAIR para cancelar a solicitação de segunda via.");
                         }
                     }
                     else
@@ -186,7 +185,7 @@ namespace PortoSeguroBOT.Dialogs
                     string urlToPdf = new Produto().getProdutoSegundaViaURL(codeSelected);
                     if (urlToPdf == null)
                     {
-                        await context.PostAsync("Sua apólice não foi emitida com pagamento via boleto.");
+                        await context.PostAsync("Sua apólice não foi emitida com pagamento via boleto ou não tem um boleto em aberto para pagamento.");
                     }
                     else
                     {
