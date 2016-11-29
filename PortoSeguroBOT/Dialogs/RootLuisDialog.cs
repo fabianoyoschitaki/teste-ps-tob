@@ -41,6 +41,8 @@ namespace PortoSeguroBOT.Dialogs
                     await this.SaudacaoAsync(context, result);
                     break;
                 case "Despedida":
+                    await this.DespedidaAsync(context, result);
+                    break;
                 case "Negacao":
                     await this.DespedidaAsync(context, result);
                     break;
