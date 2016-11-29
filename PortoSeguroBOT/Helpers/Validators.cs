@@ -53,8 +53,8 @@ namespace PortoSeguroBOT.Helpers
             string tempCnpj;
             cnpj = cnpj.Trim();
             cnpj = cnpj.Replace(".", "").Replace("-", "").Replace("/", "");
-            if (cnpj.Length != 14)
-                return false;
+            cnpj = cnpj.PadLeft(14, '0');
+           
             tempCnpj = cnpj.Substring(0, 12);
             soma = 0;
             for (int i = 0; i < 12; i++)

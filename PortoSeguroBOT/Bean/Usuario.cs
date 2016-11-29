@@ -16,20 +16,37 @@ namespace PortoSeguroBOT.Bean
 {
     public class Usuario
     {
-        public string NumeroCPF { get; set; }
-        public string DigitoCPF { get; set; }
+        public string NumeroCPFCNPJ { get; set; }
+        public string OrdemCNPJ { get; set; }
+        public string DigitoCPFCNPJ { get; set; }
         public string Nome { get; set; }
         public DateTime DataNasc { get; set; }
         public IList<Produto> Produtos {get;set;}
 
-        public static Usuario GetUsuario(string CPF)
+        public static Usuario GetUsuario(string Doc, bool IsPessoaFisica)
         {
-            CPF = CPF.Replace(".","").Replace("-","");
-            if (CPF.Length == 10) CPF = "0" + CPF;
+            Doc = Doc.Replace(".","").Replace("-","").Replace("/", "");
             Usuario user = new Usuario();
-            user.NumeroCPF = CPF.Substring(0, 9);
-            user.DigitoCPF = CPF.Substring(9, 2);
-            dynamic dados = GetUserData(user.NumeroCPF, user.DigitoCPF);
+           
+
+            if (IsPessoaFisica)
+            {
+                if (Doc.Length == 10) Doc = "0" + Doc;
+                user.NumeroCPFCNPJ = Doc.Substring(0, 9);
+                user.DigitoCPFCNPJ = Doc.Substring(9, 2);
+            }
+            else
+            {
+                if(Doc.Length == 13) Doc = "0" + Doc;
+                else if(Doc.Length == 12) Doc = "00" + Doc;
+
+                user.NumeroCPFCNPJ = Doc.Substring(0, 8);
+                user.OrdemCNPJ = Doc.Substring(8, 4);
+                user.DigitoCPFCNPJ = Doc.Substring(12, 2);
+            }
+            
+           
+            dynamic dados = GetUserData(user.NumeroCPFCNPJ, user.OrdemCNPJ, user.DigitoCPFCNPJ);
             try {
                 dynamic RootNode;
                 if (dados.Envelope.Body.obterDocumentosPorCnpjCpfResponse.obterDocumentosPorCnpjCpfReturn is JArray)
@@ -74,13 +91,13 @@ namespace PortoSeguroBOT.Bean
             } catch (Exception e)
             {
                 string erro = e.ToString();
-                user.NumeroCPF = null;
-                user.DigitoCPF = null;
+                user.NumeroCPFCNPJ = null;
+                user.DigitoCPFCNPJ = null;
                 return user;
             }
         }
 
-        public static dynamic GetUserData(string NumeroCPF,string DigitoCPF)
+        public static dynamic GetUserData(string NumeroCPF, string OrdemCNPJ, string DigitoCPF)
         {
             var _url = "https://wwws.portoseguro.com.br/consultadadoapolicesegurado/services/ConsultaDadoSeguradoService";
             var _action = "https://wwws.portoseguro.com.br/consultadadoapolicesegurado/services/ConsultaDadoSeguradoService?op=obterDocumentosPorCnpjCpf";
@@ -90,7 +107,15 @@ namespace PortoSeguroBOT.Bean
             SoapRequest += NumeroCPF;
             SoapRequest += @"</ser:numCnpjCpf><ser:digCnpjCpf>";
             SoapRequest += DigitoCPF;
-            SoapRequest += @"</ser:digCnpjCpf></ser:obterDocumentosPorCnpjCpf></soapenv:Body ></soapenv:Envelope>";
+            if(OrdemCNPJ != null)
+            {
+                SoapRequest += @"</ser:digCnpjCpf><ser:ordCnpj>";
+                SoapRequest += OrdemCNPJ != null ? OrdemCNPJ : "";
+                SoapRequest += @"</ser:ordCnpj></ser:obterDocumentosPorCnpjCpf></soapenv:Body ></soapenv:Envelope>";
+            } else
+            {
+                SoapRequest += @"</ser:digCnpjCpf></ser:obterDocumentosPorCnpjCpf></soapenv:Body ></soapenv:Envelope>";
+            }
             soapEnvelopeXml.LoadXml(SoapRequest);
 
             HttpWebRequest webRequest = CreateWebRequest(_url, _action);

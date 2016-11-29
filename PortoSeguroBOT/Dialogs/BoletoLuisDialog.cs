@@ -30,12 +30,14 @@ namespace PortoSeguroBOT.Dialogs
             Usuario user = new Usuario();
             if (context.UserData.TryGetValue("UserData", out user))
             {
-                string UserFirstName = Formatters.Capitalize(user.Nome).Split()[0];
-                PromptDialog.Text(context, callbackConfirmaData, $"{UserFirstName}, para continuarmos nos confirme sua data de nascimento. Caso deseje a segunda via para outro CPF digite OUTRO");
+                //string UserFirstName = Formatters.Capitalize(user.Nome).Split()[0];
+                //PromptDialog.Text(context, callbackConfirmaData, $"{UserFirstName}, para continuarmos nos confirme sua data de nascimento. Caso deseje a segunda via para outro CPF digite OUTRO");
+                ShowUserProducts(context, user);
+                context.Wait(MessageReceived);
             }
             else
             {
-                PromptDialog.Text(context, callbackBoletoCPF, "Para continuarmos com a solicitação de segunda via de boleto digite seu CPF");
+                PromptDialog.Text(context, callbackBoletoCPF, "Para continuarmos com a solicitação de segunda via de boleto digite seu CPF ou CNPJ");
             }
         }
 
@@ -51,23 +53,40 @@ namespace PortoSeguroBOT.Dialogs
                 }
                 else
                 {
-                    if (Validators.IsCpf(textResult))
+                    if (Validators.IsCpf(textResult) || Validators.IsCnpj(textResult))
                     {
-                        Usuario user = Usuario.GetUsuario(textResult);
-                        if(user.Nome != null)
+                        Usuario user = null;
+                        if (Validators.IsCpf(textResult))
                         {
-                            context.UserData.SetValue("UserData", user);
-                            string UserFirstName = Formatters.Capitalize(user.Nome).Split()[0];
-                            PromptDialog.Text(context, callbackConfirmaData, $"{UserFirstName}, qual a sua data de Nascimento?");
+                            user = Usuario.GetUsuario(textResult,true);
                         }
                         else
                         {
-                            PromptDialog.Text(context, callbackBoletoCPF, "Desculpe, não encontramos esse CPF em nossa base de dados, digite novamente o CPF ou SAIR para cancelar a solicitação de segunda via.");
+                            user  = Usuario.GetUsuario(textResult,false);
+                        }
+
+                       if(user.Nome != null)
+                        {
+                            context.UserData.SetValue("UserData", user);
+                            string UserFirstName = Formatters.Capitalize(user.Nome).Split()[0];
+                            if (Validators.IsCpf(textResult)) {
+                                PromptDialog.Text(context, callbackConfirmaData, $"{UserFirstName}, qual a sua data de Nascimento?");
+                            }
+                            else
+                            {
+                                ShowUserProducts(context, user);
+                                context.Wait(MessageReceived);
+                            }
+                            
+                        }
+                        else
+                        {
+                            PromptDialog.Text(context, callbackBoletoCPF, "Desculpe, não encontramos esse CPF/CNPJ em nossa base de dados, digite novamente o CPF/CNPJ ou digite SAIR para cancelar a solicitação de segunda via.");
                         }
                     }
                     else
                     {
-                        PromptDialog.Text(context, callbackBoletoCPF, "Desculpe, o texto digitado não é um CPF válido, digite novamente o CPF ou SAIR para cancelar a solicitação de segunda via.");
+                        PromptDialog.Text(context, callbackBoletoCPF, "Desculpe, o texto digitado não é um CPF/CNPJ válido, digite novamente o CPF/CNPJ ou SAIR para cancelar a solicitação de segunda via.");
                     }
                 }
             }
@@ -88,7 +107,7 @@ namespace PortoSeguroBOT.Dialogs
                 }
                 else if ("OUTRO".Equals(textResult, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    PromptDialog.Text(context, callbackBoletoCPF, "No momento só conseguimos emitir segunda via de boleto do produto Residência, caso deseje digite seu CPF");
+                    PromptDialog.Text(context, callbackBoletoCPF, "Digite o CPF/CNPJ para a emissão de segunda via");
                 }
                 else
                 {
@@ -100,44 +119,8 @@ namespace PortoSeguroBOT.Dialogs
                         {
                             if (user.DataNasc.Date.Equals(dt.Date))
                             {
-                                //await context.PostAsync("Vamos listar seus produtos Porto Seguro [Até Aqui]");
-                                if (user.Produtos != null)
-                                {
-                                    await context.PostAsync("Selecione entre seus produtos qual deseja solicitar segunda via: ");
-                                    List<Attachment> heroCards = new List<Attachment>();
-                                    foreach (Produto prod in user.Produtos)
-                                    {
-                                        string Dados = "";
-                                        Dados += prod.Sucursal != null ? prod.Sucursal + "-":"";
-                                        Dados += prod.Ramo != null ? prod.Ramo + "-" : "";
-                                        Dados += prod.NumeroApolice;
-                                        Dados += prod.Item != null ? "-" + prod.Item:"";
-                                        string imgUrl = "";
-                                        switch(prod.Codigo)
-                                        {
-                                            case 1:
-                                                //imgUrl = "https://cliente.portoseguro.com.br/static-files/images/Seguro-Auto-atendimento-portal.jpg";
-                                                imgUrl = "";
-                                                break;
-                                            default:
-                                                imgUrl = "";
-                                                break;
-                                        }
-                                        heroCards.Add(GetHeroCard(
-                                            prod.Nome,
-                                            Dados,
-                                            "",
-                                            new CardImage(url: imgUrl),
-                                            new CardAction(ActionTypes.PostBack, "Solicitar 2ª Via", value: "ProdCod|" + prod.Codigo.ToString() + "|" + prod.Sucursal.ToString() + "|" + prod.Ramo.ToString() + "|" + prod.NumeroApolice.ToString() + "|" + prod.Item.ToString()))
-                                        );
-                                    }
-                                    var reply = context.MakeMessage();
-                                    reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-                                    reply.Attachments = heroCards;
-                                    await context.PostAsync(reply);
-                                }
+                                ShowUserProducts(context, user);
                                 context.Wait(MessageReceived);
-
                             }
                             else
                             {
@@ -160,8 +143,75 @@ namespace PortoSeguroBOT.Dialogs
             {
              }
         }
+        
+        public async void ShowUserProducts(IDialogContext context, Usuario user)
+        {
+            //await context.PostAsync("Vamos listar seus produtos Porto Seguro [Até Aqui]");
+            if (user.Produtos != null)
+            {
+                await context.PostAsync("Selecione entre seus produtos qual deseja solicitar segunda via: ");
+                List<Attachment> heroCards = new List<Attachment>();
+                foreach (Produto prod in user.Produtos)
+                {
+                    string Dados = "";
+                    Dados += prod.Sucursal != null ? prod.Sucursal + "-" : "";
+                    Dados += prod.Ramo != null ? prod.Ramo + "-" : "";
+                    Dados += prod.NumeroApolice;
+                    Dados += prod.Item != null ? "-" + prod.Item : "";
+                    string imgUrl = "";
+                    switch (prod.Codigo)
+                    {
+                        case 1:
+                            //imgUrl = "https://cliente.portoseguro.com.br/static-files/images/Seguro-Auto-atendimento-portal.jpg";
+                            imgUrl = "";
+                            break;
+                        default:
+                            imgUrl = "";
+                            break;
+                    }
+                    heroCards.Add(GetHeroCard(
+                        prod.Nome,
+                        Dados,
+                        "",
+                        new CardImage(url: imgUrl),
+                        new CardAction(ActionTypes.PostBack, "Solicitar 2ª Via", value: "ProdCod|" + prod.Codigo.ToString() + "|" + prod.Sucursal.ToString() + "|" + prod.Ramo.ToString() + "|" + prod.NumeroApolice.ToString() + "|" + prod.Item.ToString()))
+                    );
+                }
+                var reply = context.MakeMessage();
+                reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+                reply.Attachments = heroCards;
+                await context.PostAsync(reply);
+            }
+            
+        }
 
-        [LuisIntent("None")]
+    public async void ShowParcelasRE(IDialogContext context, dynamic Documento)
+    {
+        //await context.PostAsync("Vamos listar seus produtos Porto Seguro [Até Aqui]");
+        if (Documento != null)
+        {
+            await context.PostAsync("Selecione a parcela que deseja emitir o boleto");
+            List<Attachment> heroCards = new List<Attachment>();
+
+            foreach (dynamic parc in Documento.documento.parcelas.parcela)
+            {
+
+                    heroCards.Add(GetHeroCard(
+                            "Parcela" + parc.numeroParcela.Value,
+                            "Valor: " + parc.valorLiquidoParcela.Value,
+                            "",
+                            new CardImage(url: ""),
+                            new CardAction(ActionTypes.PostBack, "Emitir Boleto", value: "SelBoleto|" + Documento.documento.codigoOrigemProposta.Value + "|" + Documento.documento.numeroDigitoProposta.Value + "|" + parc.numeroParcela.Value))
+                   );
+                }
+            var reply = context.MakeMessage();
+            reply.AttachmentLayout = AttachmentLayoutTypes.List;
+            reply.Attachments = heroCards;
+            await context.PostAsync(reply);
+
+        }
+    }
+    [LuisIntent("None")]
         [LuisIntent("")]
         public async Task NoneAsync(IDialogContext context, LuisResult result)
         {
@@ -169,6 +219,45 @@ namespace PortoSeguroBOT.Dialogs
             //await context.PostAsync("[BoletoLuisDialog] Desculpe, eu não entendi.");
             context.UserData.SetValue("SourceDialog", "BoletoLuisDialog");
             await context.Forward(new RootLuisDialog(), null, new Activity { Text = userToBotText }, System.Threading.CancellationToken.None);            
+        }
+
+        public async void GerarSegundaViaBoleto(IDialogContext context, string codigo)
+        {
+            await context.PostAsync($"Aguarde um momento enquanto geramos a segunda via do seu boleto.");
+            try
+            {
+                if (codigo.Split('|')[1] == "1")
+                {
+                    string urlToPdf = new Produto().getProdutoSegundaViaURL(codigo);
+                    if (urlToPdf == null)
+                    {
+                        await context.PostAsync("Sua apólice não foi emitida com pagamento via boleto ou não tem um boleto em aberto para pagamento.");
+                    }
+                    else
+                    {
+                        await context.PostAsync($"Faça o download do seu boleto clicando aqui: {urlToPdf}");
+                    }
+                }
+                else if(codigo.Split('|')[1] == "2")
+                {
+                    dynamic documentoRE = new Produto().getProdutoSegundaViaRE(codigo);
+                    if(documentoRE != null)
+                    {
+                        ShowParcelasRE(context, documentoRE);
+                        //await context.PostAsync($"Encontrei as parcelas");
+                    }
+                }
+                else
+                {
+                    await context.PostAsync($"Desculpe, no momento não consigo emitir segunda via para esse tipo de produto.");
+                }
+              
+            }
+            catch (Exception e)
+            {
+                await context.PostAsync($"Ocorreu um erro ao gerar a segunda via de seu boleto.");
+            }
+            await context.PostAsync("Podemos te ajudar em mais alguma coisa?");
         }
 
         private string userToBotText;
@@ -179,24 +268,7 @@ namespace PortoSeguroBOT.Dialogs
             string codeSelected = userToBotText;
             if (codeSelected.IndexOf("ProdCod") != -1)
             {
-                await context.PostAsync($"Aguarde um momento enquanto geramos a segunda via do seu boleto.");
-                try
-                {
-                    string urlToPdf = new Produto().getProdutoSegundaViaURL(codeSelected);
-                    if (urlToPdf == null)
-                    {
-                        await context.PostAsync("Sua apólice não foi emitida com pagamento via boleto ou não tem um boleto em aberto para pagamento.");
-                    }
-                    else
-                    {
-                        await context.PostAsync($"Faça o download do seu boleto clicando aqui: {urlToPdf}");
-                    }
-                }
-                catch (Exception e)
-                {
-                    await context.PostAsync($"Ocorreu um erro ao gerar a segunda via de seu boleto.");
-                }
-                await context.PostAsync("Podemos te ajudar em mais alguma coisa?");
+                GerarSegundaViaBoleto(context, codeSelected);
                 context.Wait(MessageReceived);
             }
             else
