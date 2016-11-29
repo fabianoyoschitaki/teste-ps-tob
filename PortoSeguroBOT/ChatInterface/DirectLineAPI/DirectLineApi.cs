@@ -24,7 +24,7 @@ namespace PortoSeguroBOT.ChatInterface.DirectLineAPI
         public dynamic getDirectLineToken()
         {
             // Create the web request  
-            string URL = "https://directline.botframework.com/api/conversations"; 
+            string URL = "https://directline.botframework.com/v3/directline/conversations"; 
             HttpWebRequest request = WebRequest.Create(URL.ToString()) as HttpWebRequest;
             request.Method = "POST";
             request.ContentType = "application/json; charset=utf-8";
@@ -52,13 +52,13 @@ namespace PortoSeguroBOT.ChatInterface.DirectLineAPI
            
         }
 
-        public Conversation getConversation(string ConversationID, string WaterMark)
+        public string getConversation(string ConversationID, string WaterMark)
         {
             // Create the web request  
-            string URL = "https://directline.botframework.com/api/conversations";
+            string URL = "https://directline.botframework.com/v3/directline/conversations";
             URL += "/";
             URL += ConversationID;
-            URL += "/messages?watermark=";
+            URL += "/activities?watermark=";
             URL += WaterMark;
 
             HttpWebRequest request = WebRequest.Create(URL.ToString()) as HttpWebRequest;
@@ -78,21 +78,22 @@ namespace PortoSeguroBOT.ChatInterface.DirectLineAPI
                     // Get the response stream  
                     StreamReader reader = new StreamReader(response.GetResponseStream());
                     string JSON = reader.ReadToEnd();
-                    objJson = JsonConvert.DeserializeObject(JSON);
-                    Conversation conv = new Conversation();
-                    IList<object> listMsg = new List<object>();
-                    foreach (var msg in objJson.messages)
-                    {
-                        Message nmsg = new Message();
-                        nmsg.Id = msg.id.Value;
-                        nmsg.ConversationId = msg.conversationId.Value;
-                        nmsg.Text = msg.text.Value;
-                        nmsg.From = msg.from.Value;
-                        listMsg.Add(nmsg);
-                    }
-                    conv.Messages = listMsg;
-                    conv.WaterMark = objJson.watermark;
-                    return conv;
+                    //objJson = JsonConvert.DeserializeObject(JSON);
+                    //Conversation conv = new Conversation();
+                    //IList<object> listMsg = new List<object>();
+                    //foreach (var msg in objJson.activities)
+                    //{
+                    //    Message nmsg = new Message();
+                    //    nmsg.Id = msg.id.Value;
+                    //    nmsg.ConversationId = msg.conversation.id.Value;
+                    //    nmsg.Text = msg.text.Value;
+                    //    nmsg.From = msg.from.id.Value;
+                    //    nmsg.Raw = JSON;
+                    //    listMsg.Add(nmsg);
+                    //}
+                    //conv.Messages = listMsg;
+                    //conv.WaterMark = objJson.watermark;
+                    return JSON;
                 }
             }
             catch (Exception e)
@@ -105,13 +106,13 @@ namespace PortoSeguroBOT.ChatInterface.DirectLineAPI
         public void sendMsgToBot(string ConversationID, string msg)
         {
             // Create the web request  
-            string URL = "https://directline.botframework.com/api/conversations";
+            string URL = "https://directline.botframework.com/v3/directline/conversations";
             URL += "/";
             URL += ConversationID;
-            URL += "/messages";
+            URL += "/activities";
 
             HttpWebRequest request = WebRequest.Create(URL.ToString()) as HttpWebRequest;
-            string jsonMsg = "{text:\"" + msg + "\", from:\"" + ConversationID + "\"}";
+            string jsonMsg = "{type:\"message\", text:\"" + msg + "\", from: { id:\"" + ConversationID + "\"}}";
 
             byte[] buffer = Encoding.ASCII.GetBytes(jsonMsg);
             request.Method = "POST";

@@ -58,6 +58,7 @@
 
 .chatMessageDiv span {
     word-wrap: break-word;
+    display:block;
 }
 
 .chatMessageSender {
@@ -65,7 +66,8 @@
 }
 
 .chatMessageReceiver {
-    background: lightblue;
+    background: #004E70;
+    color: #fff;
 }
 
 .chatMessageWrapper {

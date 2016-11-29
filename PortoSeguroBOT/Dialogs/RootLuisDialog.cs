@@ -122,8 +122,11 @@ namespace PortoSeguroBOT.Dialogs
             heroCards.Add(heroCard.ToAttachment());
 
             var reply = context.MakeMessage();
+
             reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+
             reply.Attachments = heroCards;
+            
             await context.PostAsync(reply);
             await context.PostAsync("Podemos te ajudar em mais alguma coisa?");
             context.Wait(MessageReceived);

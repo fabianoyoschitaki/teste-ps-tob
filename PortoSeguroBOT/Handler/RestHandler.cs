@@ -58,8 +58,8 @@ namespace PortoSeguroBOT.Handler
                     {
                         try
                         {
-                            Conversation conv = apiData.getConversation(Parameters[2],Parameters[3]);
-                            Response.Write(jc.Serialize(conv));
+                            string conv = apiData.getConversation(Parameters[2],Parameters[3]);
+                            Response.Write(conv);
                             Response.ContentType = "application/json";
                         }
                         catch (Exception e)
