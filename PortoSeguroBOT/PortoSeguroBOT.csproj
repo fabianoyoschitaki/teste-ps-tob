@@ -160,6 +160,7 @@
     <Content Include="packages.config">
       <SubType>Designer</SubType>
     </Content>
+    <Compile Include="ChatInterface\DirectLineAPI\Attachment.cs" />
     <None Include="Properties\PublishProfiles\caiobarreirobot.pubxml" />
     <None Include="Properties\PublishProfiles\portosegurobot %282%29.pubxml" />
     <None Include="Properties\PublishProfiles\portosegurobot.pubxml" />

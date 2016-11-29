@@ -42,8 +42,11 @@ function getBotMessage() {
         timeout: 10000,
         contentType: "application/json",
         success: function (data) {
-            for (var msg = 0; msg < data.Messages.length; msg++) {
-                generateBotMsg(data.Messages[msg].Text);
+            for (var msg = 0; msg < data.activities.length; msg++) {
+                generateBotMsg(data.activities[msg].text);
+                if (data.activities[msg].attachments) {
+                    generateBotAttachment(data.activities[msg].attachments);
+                }
                 watermark++;
             }
         },
@@ -94,5 +97,41 @@ function generateBotMsg(txt) {
         $(msgDiv).appendTo(msgWrapper);
         $(msgWrapper).appendTo(".chatContentMsgWrapper");
         $(".chatContentMsgWrapper")[0].scrollTop = $(".chatContentMsgWrapper")[0].scrollHeight;
+    }
+}
+
+function generateBotAttachment(atts) {
+    if (atts.length > 0) {
+        for (var a = 0; a < atts.length; a++) {
+            if (atts[a].contentType == "application/vnd.microsoft.card.hero") {
+                var msgWrapper = $("<div class='chatMessageWrapper chatMessageReceiverWrapper'>");
+                var msgDiv = $("<div class='chatMessageDiv chatMessageReceiver'>");
+                var title = $("<span>").html("<b>" + atts[a].content.title.toUpperCase() + "</b>");
+                var subtitle = $("<span>").html("<b>" + atts[a].content.subtitle + "</b>");
+                var text = $("<span>").text(atts[a].content.text);
+
+                $(title).appendTo(msgDiv);
+                $(subtitle).appendTo(msgDiv);
+                $(text).appendTo(msgDiv);
+
+                if (atts[a].content.buttons) {
+                    for (var b = 0; b < atts[a].content.buttons.length; b++) {
+                        var bt = atts[a].content.buttons[b];
+                        if(bt.type == "openUrl") {
+                            var btn = $("<a target='_blank' href='" + bt.value + "'><button>" + bt.title + "</button></a>");
+                            $(btn).appendTo(msgDiv);
+                        } else {
+                            var btn = $("<a href='javascript:;' data-value='" + bt.value + "'><button>" + bt.title + "</button></a>").click(function () {
+                                sendMessageToBot($(this).data("value"));
+                            });
+                            $(btn).appendTo(msgDiv);
+                        }
+                    }
+                }
+                $(msgDiv).appendTo(msgWrapper);
+                $(msgWrapper).appendTo(".chatContentMsgWrapper");
+                $(".chatContentMsgWrapper")[0].scrollTop = $(".chatContentMsgWrapper")[0].scrollHeight;
+            }
+        }
     }
 }
