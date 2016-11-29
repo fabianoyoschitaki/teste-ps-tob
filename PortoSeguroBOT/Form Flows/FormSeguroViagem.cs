@@ -388,12 +388,18 @@ namespace PortoSeguroBOT.Form_Flows
         public static Pais GetPais(string valor)
         {
             Pais retorno = null;
-            foreach (Pais pais in ConstantsPais.PAISES)
+            if (valor != null)
             {
-                if (pais.Descricao.Equals(valor, StringComparison.InvariantCultureIgnoreCase))
+                foreach (Pais pais in ConstantsPais.PAISES)
                 {
-                    retorno = pais;
-                    break;
+                    // TODO fazer tratamento para mais de um país, mostrar as opções de match
+                    //if (Formatters.RemoveAcentos(pais.Descricao.ToLower()).Contains(Formatters.RemoveAcentos(valor.ToLower())))
+                    if (Formatters.RemoveAcentos(pais.Descricao.ToLower()).Equals(Formatters.RemoveAcentos(valor.ToLower())))
+                    {
+                        retorno = pais;
+                        break;
+                    }
+
                 }
             }
             return retorno;
