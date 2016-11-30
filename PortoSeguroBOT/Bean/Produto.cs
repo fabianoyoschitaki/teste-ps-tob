@@ -97,5 +97,40 @@ namespace PortoSeguroBOT.Bean
             }
             return objJson;
         }
+
+        public dynamic SendEmailBoletoRE(string codigo,string email)
+        {
+            string[] prodData = codigo.Split('|');
+            StringBuilder URL = new StringBuilder();
+            URL.Append("https://wwws.portoseguro.com.br/gerenciadorinterfaceweb/bot_enviaboletoSAP.content?idcontrato=");
+            URL.Append(prodData[1]);
+            URL.Append(prodData[2]);
+            URL.Append("&numeroparcela="); 
+            URL.Append(prodData[3].PadLeft(3,'0'));
+            URL.Append("&emaildestinatario=");
+            URL.Append(email);
+
+            // Create the web request  
+            HttpWebRequest request = WebRequest.Create(URL.ToString()) as HttpWebRequest;
+            request.ContentType = "application/json; charset=utf-8";
+
+            dynamic objJson = null;
+            try
+            {
+                // Get response  
+                using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+                {
+                    // Get the response stream  
+                    StreamReader reader = new StreamReader(response.GetResponseStream());
+                    string JSON = reader.ReadToEnd();
+                    objJson = JsonConvert.DeserializeObject(JSON);
+                }
+            }
+            catch (Exception e)
+            {
+
+            }
+            return objJson;
+        }
     }
 }

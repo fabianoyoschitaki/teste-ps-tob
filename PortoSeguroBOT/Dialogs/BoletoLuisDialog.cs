@@ -143,75 +143,147 @@ namespace PortoSeguroBOT.Dialogs
             {
              }
         }
-        
+
+        private async Task callbackParcelaEmail(IDialogContext context, IAwaitable<string> result)
+        {
+            try
+            {
+                var textResult = await result;
+                if ("SAIR".Equals(textResult, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    await context.PostAsync("Sua solicitação de boleto foi cancelada, como podemos te ajudar?");
+                    context.Wait(MessageReceived);
+                }
+                else
+                {
+                    try
+                    {
+                        string bolCode;
+                        if(Validators.IsMail(textResult))
+                        {
+                            if (context.UserData.TryGetValue("SelParc", out bolCode))
+                            {
+                                dynamic ret = new Produto().SendEmailBoletoRE(bolCode,textResult);
+                                if(ret != null)
+                                {
+                                    if("Boleto enviado!".Equals(ret.retorno.mensagem.Value))
+                                    {
+                                        await context.PostAsync("O boleto foi enviado por email e deve chegar dentro dos próximos minutos. Podemos te ajudar em algo mais?");
+                                    } else
+                                    {
+                                        await context.PostAsync("Ocorreu um erro no sistema. Por favor, tente novamente mais tarde.");
+                                    }
+                                }
+                                else
+                                {
+                                    await context.PostAsync("Ocorreu um erro no sistema. Por favor, tente novamente mais tarde.");
+                                }
+                                context.Wait(MessageReceived);
+                            }
+                            else
+                            {
+                                await context.PostAsync("Ocorreu um erro no sistema.");
+                                context.Wait(MessageReceived);
+                            }
+                        }
+                        else
+                        {
+                            PromptDialog.Text(context, callbackParcelaEmail, $"Desculpe, o email digitado não é um email válido. Digite novamente ou digite SAIR para cancelar a solicitação.");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        await context.PostAsync("Desculpe, ocorreu um erro. Tente novamente mais tarde, podemos te ajudar em mais alguma coisa?");
+                        context.Wait(MessageReceived);
+                    }
+                }
+            }
+            catch (TooManyAttemptsException)
+            {
+            }
+        }
+
         public async void ShowUserProducts(IDialogContext context, Usuario user)
         {
             //await context.PostAsync("Vamos listar seus produtos Porto Seguro [Até Aqui]");
             if (user.Produtos != null)
             {
-                await context.PostAsync("Selecione entre seus produtos qual deseja solicitar segunda via: ");
-                List<Attachment> heroCards = new List<Attachment>();
-                foreach (Produto prod in user.Produtos)
+                try
                 {
-                    string Dados = "";
-                    Dados += prod.Sucursal != null ? prod.Sucursal + "-" : "";
-                    Dados += prod.Ramo != null ? prod.Ramo + "-" : "";
-                    Dados += prod.NumeroApolice;
-                    Dados += prod.Item != null ? "-" + prod.Item : "";
-                    string imgUrl = "";
-                    switch (prod.Codigo)
+                    await context.PostAsync("Selecione entre seus produtos qual deseja solicitar segunda via: ");
+                    List<Attachment> heroCards = new List<Attachment>();
+                    foreach (Produto prod in user.Produtos)
                     {
-                        case 1:
-                            //imgUrl = "https://cliente.portoseguro.com.br/static-files/images/Seguro-Auto-atendimento-portal.jpg";
-                            imgUrl = "";
-                            break;
-                        default:
-                            imgUrl = "";
-                            break;
+                        string Dados = "";
+                        Dados += prod.Sucursal != null ? prod.Sucursal + "-" : "";
+                        Dados += prod.Ramo != null ? prod.Ramo + "-" : "";
+                        Dados += prod.NumeroApolice;
+                        Dados += prod.Item != null ? "-" + prod.Item : "";
+                        string imgUrl = "";
+                        switch (prod.Codigo)
+                        {
+                            case 1:
+                                //imgUrl = "https://cliente.portoseguro.com.br/static-files/images/Seguro-Auto-atendimento-portal.jpg";
+                                imgUrl = "";
+                                break;
+                            default:
+                                imgUrl = "";
+                                break;
+                        }
+                        heroCards.Add(GetHeroCard(
+                            prod.Nome,
+                            Dados,
+                            "",
+                            new CardImage(url: imgUrl),
+                            new CardAction(ActionTypes.PostBack, "Solicitar 2ª Via", value: "ProdCod|" + prod.Codigo.ToString() + "|" + prod.Sucursal.ToString() + "|" + prod.Ramo.ToString() + "|" + prod.NumeroApolice.ToString() + "|" + prod.Item.ToString()))
+                        );
                     }
-                    heroCards.Add(GetHeroCard(
-                        prod.Nome,
-                        Dados,
-                        "",
-                        new CardImage(url: imgUrl),
-                        new CardAction(ActionTypes.PostBack, "Solicitar 2ª Via", value: "ProdCod|" + prod.Codigo.ToString() + "|" + prod.Sucursal.ToString() + "|" + prod.Ramo.ToString() + "|" + prod.NumeroApolice.ToString() + "|" + prod.Item.ToString()))
-                    );
+                    var reply = context.MakeMessage();
+                    reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+                    reply.Attachments = heroCards;
+                    await context.PostAsync(reply);
                 }
-                var reply = context.MakeMessage();
-                reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-                reply.Attachments = heroCards;
-                await context.PostAsync(reply);
+                catch (Exception e)
+                {
+                    await context.PostAsync("Desculpe, ocorreu um erro ao listar seus produtos, tente novamente mais tarde.");
+                }
             }
             
         }
 
-    public async void ShowParcelasRE(IDialogContext context, dynamic Documento)
-    {
-        //await context.PostAsync("Vamos listar seus produtos Porto Seguro [Até Aqui]");
-        if (Documento != null)
+        public async void ShowParcelasRE(IDialogContext context, dynamic Documento)
         {
-            await context.PostAsync("Selecione a parcela que deseja emitir o boleto");
-            List<Attachment> heroCards = new List<Attachment>();
-
-            foreach (dynamic parc in Documento.documento.parcelas.parcela)
+            //await context.PostAsync("Vamos listar seus produtos Porto Seguro [Até Aqui]");
+            if (Documento != null)
             {
+                try
+                {
+                    await context.PostAsync("Selecione a parcela que deseja emitir o boleto");
+                    List<Attachment> heroCards = new List<Attachment>();
 
-                    heroCards.Add(GetHeroCard(
-                            "Parcela" + parc.numeroParcela.Value,
-                            "Valor: " + parc.valorLiquidoParcela.Value,
-                            "",
-                            new CardImage(url: ""),
-                            new CardAction(ActionTypes.PostBack, "Emitir Boleto", value: "SelBoleto|" + Documento.documento.codigoOrigemProposta.Value + "|" + Documento.documento.numeroDigitoProposta.Value + "|" + parc.numeroParcela.Value))
-                   );
+                    foreach (dynamic parc in Documento.documento.parcelas.parcela)
+                    {
+                        heroCards.Add(GetHeroCard(
+                                "Parcela" + parc.numeroParcela.Value,
+                                "Valor: " + parc.valorLiquidoParcela.Value,
+                                "",
+                                new CardImage(url: ""),
+                                new CardAction(ActionTypes.PostBack, "Emitir Boleto", value: "SelBoleto|" + Documento.documento.codigoOrigemProposta.Value + "|" + Documento.documento.numeroDigitoProposta.Value + "|" + parc.numeroParcela.Value))
+                        );
+                    }
+                    var reply = context.MakeMessage();
+                    reply.AttachmentLayout = AttachmentLayoutTypes.List;
+                    reply.Attachments = heroCards;
+                    await context.PostAsync(reply);
                 }
-            var reply = context.MakeMessage();
-            reply.AttachmentLayout = AttachmentLayoutTypes.List;
-            reply.Attachments = heroCards;
-            await context.PostAsync(reply);
-
+                catch (Exception e)
+                {
+                    await context.PostAsync("Ocorreu um erro ao gerar as parcelas para seleção. Tente novamente mais tarde.");
+                }
+            }
         }
-    }
-    [LuisIntent("None")]
+
+        [LuisIntent("None")]
         [LuisIntent("")]
         public async Task NoneAsync(IDialogContext context, LuisResult result)
         {
@@ -223,7 +295,7 @@ namespace PortoSeguroBOT.Dialogs
 
         public async void GerarSegundaViaBoleto(IDialogContext context, string codigo)
         {
-            await context.PostAsync($"Aguarde um momento enquanto geramos a segunda via do seu boleto.");
+            await context.PostAsync($"Aguarde um momento enquanto verificamos seu boleto.");
             try
             {
                 if (codigo.Split('|')[1] == "1")
@@ -257,7 +329,13 @@ namespace PortoSeguroBOT.Dialogs
             {
                 await context.PostAsync($"Ocorreu um erro ao gerar a segunda via de seu boleto.");
             }
-            await context.PostAsync("Podemos te ajudar em mais alguma coisa?");
+            //await context.PostAsync("Podemos te ajudar em mais alguma coisa?");
+        }
+
+        public async Task ParcelaBoletoRESelecionada(IDialogContext context, string codigo)
+        {
+            context.UserData.SetValue("SelParc", codigo);
+            PromptDialog.Text(context, callbackParcelaEmail, "Para esse tipo de apólice o boleto é enviado via email. Qual o seu email?");
         }
 
         private string userToBotText;
@@ -271,11 +349,15 @@ namespace PortoSeguroBOT.Dialogs
                 GerarSegundaViaBoleto(context, codeSelected);
                 context.Wait(MessageReceived);
             }
+            else if(codeSelected.IndexOf("SelBoleto") != -1)
+            {
+                await ParcelaBoletoRESelecionada(context, codeSelected);
+            }
             else
             {
                 await base.MessageReceived(context, item);
             }
-         }
+        }
 
         public Attachment GetHeroCard(string title, string subtitle, string text, CardImage cardImage, CardAction cardAction)
         {
