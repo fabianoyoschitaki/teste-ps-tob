@@ -132,20 +132,70 @@ namespace PortoSeguroBOT.Dialogs
             context.Wait(MessageReceived);
         }
 
+        [LuisIntent("TrocarUsuario")]
+        public async Task TrocarUsuarioAsync(IDialogContext context, LuisResult result)
+        {
+            await context.PostAsync("No momento eu consigo cotar um seguro para sua viagem e emitir uma segunda via de boleto para o seguro do seu auto. O que deseja fazer?");
+            context.Wait(MessageReceived);
+        }
+
+
         [LuisIntent("habilidadesBot")]
         public async Task habilidadesAsync(IDialogContext context, LuisResult result)
         {
             await context.PostAsync("No momento eu consigo cotar um seguro para sua viagem e emitir uma segunda via de boleto para o seguro do seu auto. O que deseja fazer?");
             context.Wait(MessageReceived);
         }
-        
+
+        [LuisIntent("SolicitarInformacao")]
+        public async Task SolicitarInfoAsync(IDialogContext context, LuisResult result)
+        {
+            await context.PostAsync("Por favor, veja se algum desses links pode te ajudar:");
+            try
+            {
+                string SearchFor = "";
+                foreach (var dt in result.Entities)
+                {
+                    if("InfoEntity".Equals(dt.Type))
+                    {
+                        SearchFor = dt.Entity;
+                    }
+                }
+
+                List<SearchResult> SearchList = new List<SearchResult>(PortoSearch.GetPortoSearch(SearchFor));
+                SearchList.AddRange(MicrosftAPI.BingSearch(SearchFor));
+
+                List<Attachment> heroCards = new List<Attachment>();
+                
+                foreach (SearchResult s in SearchList)
+                {
+                    heroCards.Add(Formatters.GetHeroCard(
+                        s.Title,
+                        s.Desc,
+                        s.SubDesc,
+                        new CardImage(url: ""),
+                        new CardAction(ActionTypes.OpenUrl, "Acessar", value: s.Link))
+                    );
+                }
+
+                var reply = context.MakeMessage();
+                reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+                reply.Attachments = heroCards;
+                await context.PostAsync(reply);
+            }
+            catch (Exception e)
+            {
+                await context.PostAsync("Desculpe, ocorreu um erro enquanto buscávamos mais informações, por favor tente mais tarde.");
+            }
+            context.Wait(MessageReceived);
+        }
+
         [LuisIntent("None")]
         [LuisIntent("")]
         public async Task NoneAsync(IDialogContext context, LuisResult result)
         {
             logNone.Info(this.GetType().Name + "-None: " + userToBotText);
-            //await context.PostAsync($"Não entendeu: {userToBotText}");
-            await context.PostAsync("Desculpe, eu não entendi....");
+            await context.PostAsync("Desculpe, eu não entendi...");
             context.UserData.RemoveValue("SourceDialog");
             context.Wait(MessageReceived);
         }

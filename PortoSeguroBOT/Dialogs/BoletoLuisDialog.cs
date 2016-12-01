@@ -230,7 +230,7 @@ namespace PortoSeguroBOT.Dialogs
                                 imgUrl = "";
                                 break;
                         }
-                        heroCards.Add(GetHeroCard(
+                        heroCards.Add(Formatters.GetHeroCard(
                             prod.Nome,
                             Dados,
                             "",
@@ -263,16 +263,16 @@ namespace PortoSeguroBOT.Dialogs
 
                     foreach (dynamic parc in Documento.documento.parcelas.parcela)
                     {
-                        heroCards.Add(GetHeroCard(
+                        heroCards.Add(Formatters.GetHeroCard(
                                 "Parcela" + parc.numeroParcela.Value,
                                 "Valor: " + parc.valorLiquidoParcela.Value,
-                                "",
+                                "Vencimento: " + parc.dataVencimento.Value,
                                 new CardImage(url: ""),
                                 new CardAction(ActionTypes.PostBack, "Emitir Boleto", value: "SelBoleto|" + Documento.documento.codigoOrigemProposta.Value + "|" + Documento.documento.numeroDigitoProposta.Value + "|" + parc.numeroParcela.Value))
                         );
                     }
                     var reply = context.MakeMessage();
-                    reply.AttachmentLayout = AttachmentLayoutTypes.List;
+                    reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
                     reply.Attachments = heroCards;
                     await context.PostAsync(reply);
                 }
@@ -359,17 +359,6 @@ namespace PortoSeguroBOT.Dialogs
             }
         }
 
-        public Attachment GetHeroCard(string title, string subtitle, string text, CardImage cardImage, CardAction cardAction)
-        {
-            var heroCard = new HeroCard
-            {
-                Title = title,
-                Subtitle = subtitle,
-                Text = text,
-                Images = new List<CardImage>() { cardImage },
-                Buttons = new List<CardAction>() { cardAction },
-            };
-            return heroCard.ToAttachment();
-        }
+        
     }
 }

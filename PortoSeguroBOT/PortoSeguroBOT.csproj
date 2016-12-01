@@ -130,7 +130,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Bean\MicrosftAPI.cs" />
+    <Compile Include="Bean\PortoSearch.cs" />
     <Compile Include="Bean\Produto.cs" />
+    <Compile Include="Bean\SearchResult.cs" />
     <Compile Include="Bean\SeguroViagem.cs" />
     <Compile Include="Bean\Usuario.cs" />
     <Compile Include="ChatInterface\DirectLineAPI\Conversation.cs" />
