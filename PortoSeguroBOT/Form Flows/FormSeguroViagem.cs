@@ -371,7 +371,7 @@ namespace PortoSeguroBOT.Form_Flows
 
         private static bool ConfirmedDataPartida(FormSeguroViagem state)
         {
-            if ((state.confirmaDataPartida == SimNao.Não || !state.TempIdaValid) && state.DataPartida == null)
+            if ((state.confirmaDataPartida == SimNao.Não || !state.TempIdaValid))
             {
                 return true;
             }
@@ -399,6 +399,11 @@ namespace PortoSeguroBOT.Form_Flows
             else
             {
                 state.DataPartida = (DateTime)value;
+                state.TempIdaValid = true;
+                if(state.TempVolta != null)
+                {
+                    state.TempVoltaValid = ValidateEndDateExcerpt(state.DataPartida, state.TempVolta);
+                }
             }
             return Task.FromResult(result);
         }
@@ -420,6 +425,10 @@ namespace PortoSeguroBOT.Form_Flows
             else
             {
                 state.DataPartida = (DateTime)value;
+                if (state.TempVolta != null)
+                {
+                    state.TempVoltaValid = ValidateEndDateExcerpt(state.DataPartida, state.TempVolta);
+                }
             }
             return Task.FromResult(result);
         }
@@ -482,6 +491,7 @@ namespace PortoSeguroBOT.Form_Flows
             else
             {
                 state.DataRetorno = (DateTime)value;
+                state.TempVoltaValid = true;
             }
             return Task.FromResult(result);
         }
