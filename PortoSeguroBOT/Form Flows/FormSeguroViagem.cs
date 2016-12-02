@@ -52,7 +52,7 @@ namespace PortoSeguroBOT.Form_Flows
         [Prompt("Confirma sua Data de Partida como sendo {TempIda}? {||}", ChoiceFormat = "{1}")]
         public SimNao? confirmaDataPartida;
 
-        [Prompt("A Data inicial fornecida não é uma data inválida, digite uma data inicial válida ou SAIR para cancelar a cotação")]
+        [Prompt("A Data inicial fornecida não é uma data válida, digite uma data inicial válida ou SAIR para cancelar a cotação")]
         [Template(TemplateUsage.NotUnderstood, "Eu não entendi \"{0}\".", "Tente novamente com o formato dd/mm/aaaa, eu não entendi \"{0}\".")]
         [Pattern(@"^(((0[1-9]|[12]\d|3[01])\/(0[13578]|1[02])\/((19|[2-9]\d)\d{2}))|((0[1-9]|[12]\d|30)\/(0[13456789]|1[012])\/((19|[2-9]\d)\d{2}))|((0[1-9]|1\d|2[0-8])\/02\/((19|[2-9]\d)\d{2}))|(29\/02\/((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))))$")]
         public DateTime DataPartidaErr { get; set; }
@@ -142,7 +142,7 @@ namespace PortoSeguroBOT.Form_Flows
             }
             else
             {
-                this.TempIdaValid = false;
+                this.TempVoltaValid = false;
             }
         }
 
