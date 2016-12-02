@@ -28,7 +28,11 @@ namespace PortoSeguroBOT.Dialogs
             Dictionary<string, string> data = new Dictionary<string, string>();
             foreach(var dt in result.Entities)
             {
-                data.Add(dt.Type, dt.Entity);
+                string temp;
+                if (!data.TryGetValue(dt.Type, out temp))
+                {
+                    data.Add(dt.Type, dt.Entity);
+                }
             }
 
             var SeguroForms = new FormDialog<FormSeguroViagem>(new FormSeguroViagem(data), FormSeguroViagem.SeguroBuildForm, FormOptions.PromptInStart);
@@ -71,7 +75,7 @@ namespace PortoSeguroBOT.Dialogs
                 string reply;
                 if (e.InnerException == null)
                 {
-                    reply = $"Você cancelou a operação no passo {e.Last}. Posso te ajudar em algo mais?";
+                    reply = $"Você cancelou a operação de cotação de seguro. Posso te ajudar em algo mais?";
                 }
                 else
                 {

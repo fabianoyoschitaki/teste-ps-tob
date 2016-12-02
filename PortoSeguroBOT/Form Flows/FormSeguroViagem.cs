@@ -21,6 +21,10 @@ namespace PortoSeguroBOT.Form_Flows
         public string TempDestino;
         public bool TempOrigemValid;
         public bool TempDestinoValid;
+        public string TempIda;
+        public string TempVolta;
+        public bool TempIdaValid;
+        public bool TempVoltaValid;
 
         [Prompt("Confirma seu local de saída sendo: {TempOrigem}? {||}", ChoiceFormat = "{1}")]
         public SimNao? confirmaEstado;
@@ -45,10 +49,26 @@ namespace PortoSeguroBOT.Form_Flows
         [Prompt("Nesta viagem visitará também algum país europeu?{||}", ChoiceFormat = "{1}")]
         public SimNao? PaisEuropeu;
 
+        [Prompt("Confirma sua Data de Partida como sendo {TempIda}? {||}", ChoiceFormat = "{1}")]
+        public SimNao? confirmaDataPartida;
+
+        [Prompt("A Data inicial fornecida não é uma data inválida, digite uma data inicial válida ou SAIR para cancelar a cotação")]
+        [Template(TemplateUsage.NotUnderstood, "Eu não entendi \"{0}\".", "Tente novamente com o formato dd/mm/aaaa, eu não entendi \"{0}\".")]
+        [Pattern(@"^(((0[1-9]|[12]\d|3[01])\/(0[13578]|1[02])\/((19|[2-9]\d)\d{2}))|((0[1-9]|[12]\d|30)\/(0[13456789]|1[012])\/((19|[2-9]\d)\d{2}))|((0[1-9]|1\d|2[0-8])\/02\/((19|[2-9]\d)\d{2}))|(29\/02\/((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))))$")]
+        public DateTime DataPartidaErr { get; set; }
+
         [Prompt("Qual a data da sua partida? Escreva no padrão dd/mm/aaaa")]
         [Template(TemplateUsage.NotUnderstood, "Eu não entendi \"{0}\".", "Tente novamente com o formato dd/mm/aaaa, eu não entendi \"{0}\".")]
         [Pattern(@"^(((0[1-9]|[12]\d|3[01])\/(0[13578]|1[02])\/((19|[2-9]\d)\d{2}))|((0[1-9]|[12]\d|30)\/(0[13456789]|1[012])\/((19|[2-9]\d)\d{2}))|((0[1-9]|1\d|2[0-8])\/02\/((19|[2-9]\d)\d{2}))|(29\/02\/((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))))$")]
         public DateTime DataPartida { get; set; }
+
+        [Prompt("Confirma sua Data de Retorno como sendo {TempVolta}? {||}", ChoiceFormat = "{1}")]
+        public SimNao? confirmaDataRetorno;
+
+        [Prompt("A Data final fornecida não é uma data válida, digite uma data final válida ou SAIR para cancelar a cotação")]
+        [Template(TemplateUsage.NotUnderstood, "Eu não entendi \"{0}\".", "Tente novamente com o formato dd/mm/aaaa, eu não entendi \"{0}\".")]
+        [Pattern(@"^(((0[1-9]|[12]\d|3[01])\/(0[13578]|1[02])\/((19|[2-9]\d)\d{2}))|((0[1-9]|[12]\d|30)\/(0[13456789]|1[012])\/((19|[2-9]\d)\d{2}))|((0[1-9]|1\d|2[0-8])\/02\/((19|[2-9]\d)\d{2}))|(29\/02\/((1[6-9]|[2-9]\d)(0[48]|[2468][048]|[13579][26])|((16|[2468][048]|[3579][26])00))))$")]
+        public DateTime DataRetornoErr { get; set; }
 
         [Prompt("Qual a data do seu retorno? Escreva no padrão dd/mm/aaaa")]
         [Template(TemplateUsage.NotUnderstood, "Eu não entendi \"{0}\".", "Tente novamente com o formato dd/mm/aaaa, eu não entendi \"{0}\".")]
@@ -80,6 +100,11 @@ namespace PortoSeguroBOT.Form_Flows
             data.TryGetValue("Localidade::LocalidadeOrigem", out this.TempOrigem);
             data.TryGetValue("Localidade::LocalidadeDestino", out this.TempDestino);
 
+            data.TryGetValue("Periodo::Volta", out this.TempVolta);
+            data.TryGetValue("Periodo::Ida", out this.TempIda);
+            if(this.TempIda != null) this.TempIda = this.TempIda.Replace(" ", "");
+            if (this.TempVolta != null)  this.TempVolta = this.TempVolta.Replace(" ", "");
+
             if (GetEstado(this.TempOrigem) == null)
             {
                 this.TempOrigemValid = false;
@@ -99,6 +124,26 @@ namespace PortoSeguroBOT.Form_Flows
                 this.TempDestino = GetPais(this.TempDestino).Descricao;
                 this.TempDestinoValid = true;
             }
+
+            DateTime tempIda;
+            if (DateTime.TryParse(this.TempIda, out tempIda))
+            {
+                this.TempIdaValid = ValidadeStartDateExcerpt(tempIda);
+            }                
+            else
+            {
+                this.TempIdaValid = false;
+            }
+
+            DateTime tempVolta;
+            if (DateTime.TryParse(this.TempVolta, out tempVolta))
+            {
+                this.TempVoltaValid  = ValidateEndDateExcerpt(tempIda,tempVolta);
+            }
+            else
+            {
+                this.TempIdaValid = false;
+            }
         }
 
         public static IForm<FormSeguroViagem> SeguroBuildForm()
@@ -113,6 +158,8 @@ namespace PortoSeguroBOT.Form_Flows
             return FormUtils.CreateCustomForm<FormSeguroViagem>()
                 .Field(nameof(TempOrigem), active: alwaysFalse) //Precisa Incluir esse Field para ter visibilidade
                 .Field(nameof(TempDestino), active: alwaysFalse) //Precisa Incluir esse Field para ter visibilidade
+                .Field(nameof(TempIda), active: alwaysFalse) //Precisa Incluir esse Field para ter visibilidade
+                .Field(nameof(TempVolta), active: alwaysFalse) //Precisa Incluir esse Field para ter visibilidade
                 .Field(nameof(confirmaEstado), active: HasOrign)
                 .Field(nameof(notFoundEstado), active: IsOrignValid, validate: ValidateUF)
                 .Field(nameof(Origem),active:ConfirmedOrign,validate: ValidateUF)
@@ -120,8 +167,12 @@ namespace PortoSeguroBOT.Form_Flows
                 .Field(nameof(notFoundPais), active: IsDestinyValid, validate: ValidatePais)
                 .Field(nameof(Destino), active: ConfirmedDestiny, validate: ValidatePais)
                 .Field(nameof(PaisEuropeu),active: DestinoIsEurope)
-                .Field(nameof(DataPartida), validate: ValidateStartDate)
-                .Field(nameof(DataRetorno), validate: ValidateEndDate)
+                .Field(nameof(confirmaDataPartida), active: ValidDataPartida)
+                .Field(nameof(DataPartidaErr), active: IsIdaValid, validate: ValidateStartDateErr)
+                .Field(nameof(DataPartida), active:ConfirmedDataPartida, validate: ValidateStartDate)
+                .Field(nameof(confirmaDataRetorno), active: ValidDataRetorno)
+                .Field(nameof(DataRetornoErr), active: IsVoltaValid, validate: ValidateEndDateErr)
+                .Field(nameof(DataRetorno), active: ConfirmedDataRetorno, validate: ValidateEndDate)
                 .Field(nameof(Menor70), validate: ValidateQtd)
                 .Field(nameof(Maior70), validate: ValidateQtd)
                 .Field(nameof(ViagemAventura))
@@ -137,6 +188,30 @@ namespace PortoSeguroBOT.Form_Flows
         private static bool HasOrign(FormSeguroViagem state)
         {
             if(state.TempOrigem != null && state.TempOrigemValid)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private static bool ValidDataPartida(FormSeguroViagem state)
+        {
+            if (state.TempIdaValid)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private static bool ValidDataRetorno(FormSeguroViagem state)
+        {
+            if (state.TempVoltaValid)
             {
                 return true;
             }
@@ -270,6 +345,64 @@ namespace PortoSeguroBOT.Form_Flows
             return Task.FromResult(result);
         }
 
+        private static bool IsIdaValid(FormSeguroViagem state)
+        {
+            if (state.TempIdaValid || state.TempIda == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        private static bool IsVoltaValid(FormSeguroViagem state)
+        {
+            if (state.TempVoltaValid || state.TempVolta == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        private static bool ConfirmedDataPartida(FormSeguroViagem state)
+        {
+            if ((state.confirmaDataPartida == SimNao.Não || !state.TempIdaValid) && state.DataPartida == null)
+            {
+                return true;
+            }
+            else
+            {
+                //state.DataPartida = DateTime.ParseExact(state.TempIda, "dd/MM/yyyy",null);   
+                return false;
+            }
+        }
+
+        private static Task<ValidateResult> ValidateStartDateErr(FormSeguroViagem state, object value)
+        {
+            var result = new ValidateResult
+            {
+                IsValid = true,
+                Value = value
+            };
+            bool valid = ValidadeStartDateExcerpt(value);
+
+            if (!valid)
+            {
+                result.Feedback = "";
+                result.IsValid = false;
+            }
+            else
+            {
+                state.DataPartida = (DateTime)value;
+            }
+            return Task.FromResult(result);
+        }
+
         private static Task<ValidateResult> ValidateStartDate(FormSeguroViagem state, object value)
         {
             var result = new ValidateResult
@@ -277,7 +410,35 @@ namespace PortoSeguroBOT.Form_Flows
                 IsValid = true,
                 Value = value
             };
-            var startDate = (DateTime)value;
+            bool valid = ValidadeStartDateExcerpt(value);
+
+            if (!valid)
+            {
+                result.Feedback = "Data inicial inválida, digite uma data inicial válida ou SAIR para cancelar a cotação";
+                result.IsValid = false;
+            }
+            else
+            {
+                state.DataPartida = (DateTime)value;
+            }
+            return Task.FromResult(result);
+        }
+
+        public static bool ValidadeStartDateExcerpt(object value)
+        {
+
+            DateTime startDate;
+            try
+            {
+                startDate = (DateTime)value;
+            }
+            catch (InvalidCastException e)
+            {
+                if(!DateTime.TryParse(value.ToString(),out startDate))
+                {
+                    return false;
+                }
+            }
             DateTime formattedDt;
             if (DateTime.TryParse(startDate.ToString(new CultureInfo("pt-BR")), out formattedDt))
             {
@@ -285,8 +446,42 @@ namespace PortoSeguroBOT.Form_Flows
             }
             if (startDate < DateTime.Today)
             {
-                result.Feedback = "Data inicial inválida, digite uma data inicial válida ou SAIR para cancelar a cotação";
+                return false;
+            }
+            return true;
+        }
+
+        private static bool ConfirmedDataRetorno(FormSeguroViagem state)
+        {
+            if ((state.confirmaDataRetorno == SimNao.Não || !state.TempVoltaValid))
+            {
+                return true;
+            }
+            else
+            {
+                //state.DataRetorno = DateTime.ParseExact(state.TempVolta, "dd/MM/yyyy", null); ;
+                return false;
+            }
+        }
+
+        private static Task<ValidateResult> ValidateEndDateErr(FormSeguroViagem state, object value)
+        {
+            var result = new ValidateResult
+            {
+                IsValid = true,
+                Value = value
+            };
+            var startDate = state.DataPartida;
+            bool valid = ValidateEndDateExcerpt(state.DataPartida, value);
+
+            if (!valid)
+            {
+                result.Feedback = "";
                 result.IsValid = false;
+            }
+            else
+            {
+                state.DataRetorno = (DateTime)value;
             }
             return Task.FromResult(result);
         }
@@ -299,12 +494,41 @@ namespace PortoSeguroBOT.Form_Flows
                 Value = value
             };
             var startDate = state.DataPartida;
+            bool valid = ValidateEndDateExcerpt(state.DataPartida, value);
+            
+            if (!valid)
+            {
+                result.Feedback = "Data final inválida, digite uma data final válida ou SAIR para cancelar a cotação";
+                result.IsValid = false;
+            }
+            else
+            {
+               state.DataRetorno = (DateTime)value;
+            }
+            return Task.FromResult(result);
+        }
+
+        private static bool ValidateEndDateExcerpt(DateTime start, object value)
+        {
+            var startDate = start;
             DateTime formattedDt;
-            if (DateTime.TryParse(state.DataPartida.ToString(new CultureInfo("pt-BR")), out formattedDt))
+            if (DateTime.TryParse(start.ToString(new CultureInfo("pt-BR")), out formattedDt))
             {
                 startDate = formattedDt;
             }
-            var endDate = (DateTime)value;
+            DateTime endDate;
+            try
+            {
+                endDate = (DateTime)value;
+            }
+            catch (InvalidCastException e)
+            {
+                if (!DateTime.TryParse(value.ToString(), out endDate))
+                {
+                    return false;
+                }
+            }
+
             if (DateTime.TryParse(
                 endDate.ToString(new CultureInfo("pt-BR")), out formattedDt))
             {
@@ -312,10 +536,9 @@ namespace PortoSeguroBOT.Form_Flows
             }
             if (endDate < startDate)
             {
-                result.Feedback = "Data final inválida, digite uma data final válida ou SAIR para cancelar a cotação";
-                result.IsValid = false;
+                return false;
             }
-            return Task.FromResult(result);
+            return true;
         }
 
         private static Task<ValidateResult> ValidateQtd(FormSeguroViagem state, object value)
