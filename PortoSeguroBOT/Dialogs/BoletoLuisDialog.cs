@@ -41,6 +41,12 @@ namespace PortoSeguroBOT.Dialogs
             }
         }
 
+        [LuisIntent("TrocarUsuario")]
+        public async Task TrocarUsuarioAsync(IDialogContext context, LuisResult result)
+        {
+            PromptDialog.Text(context, callbackBoletoCPF, "Digite o CPF/CNPJ para a emissão de segunda via");
+        }
+
         private async Task callbackBoletoCPF(IDialogContext context, IAwaitable<string> result)
         {
             try

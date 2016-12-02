@@ -14,6 +14,7 @@ using System.ServiceModel.Web;
 using System.ServiceModel;
 using System.ServiceModel.Description;
 using PortoSeguroBOT.Helpers;
+using PortoSeguroBOT.Handler;
 
 namespace PortoSeguroBOT
 {
@@ -46,7 +47,46 @@ namespace PortoSeguroBOT
             }
             else if (activity.Type == ActivityTypes.Message)
             {
+                try
+                {
+                    if (activity.Attachments.Any())
+                    {
+                        foreach(Attachment at in activity.Attachments)
+                        {
+                            try
+                            {
+                                log.Info("UsuárioAtt [" + activity.From.Id + "]: " + at.Name);
+                                log.Info("UsuárioAtt [" + activity.From.Id + "]: " + at.ThumbnailUrl);
+                                log.Info("UsuárioAtt [" + activity.From.Id + "]: " + at.ContentUrl);
+                                log.Info("UsuárioAtt [" + activity.From.Id + "]: " + at.ContentType);
+                            }
+                            catch (Exception e)
+                            {
+
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+
+                }
+
                 log.Info("Usuário [" + activity.From.Id + "]: " + activity.Text);
+                //try
+                //{
+                //    string reco = AudioHandler.DoSpeechReco(null);
+                //    if (reco != null)
+                //    {
+                //        log.Info("UsuárioVoz [" + activity.From.Id + "]: " + reco);
+                //        activity.Text = reco;
+                //     }
+                //}
+                //catch(Exception e)
+                //{
+
+                //}
+               
                 await Conversation.SendAsync(activity, () => new RootLuisDialog());
             }
             else
