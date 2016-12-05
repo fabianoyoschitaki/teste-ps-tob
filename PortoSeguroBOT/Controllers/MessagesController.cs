@@ -27,10 +27,10 @@ namespace PortoSeguroBOT
         public static string tex;
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
         {
+            ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
+
             if (activity.Type == ActivityTypes.ConversationUpdate)
             {
-                ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
-                
                 // mensagem para retornar
                 string messageToReply = "Benvindo a Porto Seguro, como podemos te ajudar? ";
                 StateClient stateClient = activity.GetStateClient();
@@ -59,6 +59,7 @@ namespace PortoSeguroBOT
                                 log.Info("UsuárioAtt [" + activity.From.Id + "]: " + at.ThumbnailUrl);
                                 log.Info("UsuárioAtt [" + activity.From.Id + "]: " + at.ContentUrl);
                                 log.Info("UsuárioAtt [" + activity.From.Id + "]: " + at.ContentType);
+                                await connector.Conversations.ReplyToActivityAsync(activity.CreateReply("Desculpe, no momento eu não consigo entender emoticons e anexos, por favor, use apenas texto."));
                             }
                             catch (Exception e)
                             {
@@ -72,22 +73,8 @@ namespace PortoSeguroBOT
 
                 }
 
-                log.Info("Usuário [" + activity.From.Id + "]: " + activity.Text);
-                //try
-                //{
-                //    string reco = AudioHandler.DoSpeechReco(null);
-                //    if (reco != null)
-                //    {
-                //        log.Info("UsuárioVoz [" + activity.From.Id + "]: " + reco);
-                //        activity.Text = reco;
-                //     }
-                //}
-                //catch(Exception e)
-                //{
-
-                //}
-               
                 await Conversation.SendAsync(activity, () => new RootLuisDialog());
+                log.Info("Usuário ["+activity.ChannelId+"][" + activity.From.Id + "]: " + activity.Text);
             }
             else
             {

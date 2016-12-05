@@ -19,7 +19,7 @@ namespace PortoSeguroBOT.Dialogs
     public class SeguroLuisDialog : LuisDialog<object>
     {
         private static readonly log4net.ILog logNone = log4net.LogManager.GetLogger("BotRollingFileLoggerNone");
-
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         [LuisIntent("ContratarSeguroViagem")]
         public async Task SeguroViagemAsync(IDialogContext context, LuisResult result)
         {
@@ -28,6 +28,7 @@ namespace PortoSeguroBOT.Dialogs
             Dictionary<string, string> data = new Dictionary<string, string>();
             foreach(var dt in result.Entities)
             {
+                log.Info("UsuárioAtt [Entity]: " + dt.Type + " - " + dt.Entity);
                 string temp;
                 if (!data.TryGetValue(dt.Type, out temp))
                 {

@@ -126,7 +126,7 @@ namespace PortoSeguroBOT.Form_Flows
             }
 
             DateTime tempIda;
-            if (DateTime.TryParse(this.TempIda, out tempIda))
+            if (DateTime.TryParseExact(this.TempIda, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out tempIda))
             {
                 this.TempIdaValid = ValidadeStartDateExcerpt(tempIda);
             }                
@@ -136,7 +136,7 @@ namespace PortoSeguroBOT.Form_Flows
             }
 
             DateTime tempVolta;
-            if (DateTime.TryParse(this.TempVolta, out tempVolta))
+            if (DateTime.TryParseExact(this.TempVolta, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out tempVolta))
             {
                 this.TempVoltaValid  = ValidateEndDateExcerpt(tempIda,tempVolta);
             }
@@ -377,7 +377,11 @@ namespace PortoSeguroBOT.Form_Flows
             }
             else
             {
-                //state.DataPartida = DateTime.ParseExact(state.TempIda, "dd/MM/yyyy",null);   
+                DateTime parsedIda;
+                if (DateTime.TryParseExact(state.TempIda, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedIda))
+                {
+                    state.DataPartida = parsedIda;
+                }
                 return false;
             }
         }
@@ -453,10 +457,10 @@ namespace PortoSeguroBOT.Form_Flows
             {
                 startDate = formattedDt;
             }
-            if (startDate < DateTime.Today)
-            {
-                return false;
-            }
+            //if (startDate < DateTime.Today)
+            //{
+            //    return false;
+            //}
             return true;
         }
 
@@ -468,32 +472,44 @@ namespace PortoSeguroBOT.Form_Flows
             }
             else
             {
-                //state.DataRetorno = DateTime.ParseExact(state.TempVolta, "dd/MM/yyyy", null); ;
+                DateTime parsedVolta;
+                if (DateTime.TryParseExact(state.TempVolta, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedVolta))
+                {
+                    state.DataRetorno = parsedVolta;
+                }
                 return false;
             }
         }
 
         private static Task<ValidateResult> ValidateEndDateErr(FormSeguroViagem state, object value)
         {
-            var result = new ValidateResult
-            {
-                IsValid = true,
-                Value = value
-            };
-            var startDate = state.DataPartida;
-            bool valid = ValidateEndDateExcerpt(state.DataPartida, value);
+            if(value != null) { 
+                var result = new ValidateResult
+                {
+                    IsValid = true,
+                    Value = value
+                };
+                var startDate = state.DataPartida;
+                bool valid = ValidateEndDateExcerpt(state.DataPartida, value);
 
-            if (!valid)
-            {
-                result.Feedback = "";
-                result.IsValid = false;
+                if (!valid)
+                {
+                    result.Feedback = "";
+                    result.IsValid = false;
+                }
+                else
+                {
+                    state.DataRetorno = (DateTime)value;
+                    state.TempVoltaValid = true;
+                }
+
+                return Task.FromResult(result);
             }
             else
             {
-                state.DataRetorno = (DateTime)value;
-                state.TempVoltaValid = true;
+                return null;
             }
-            return Task.FromResult(result);
+            
         }
 
         private static Task<ValidateResult> ValidateEndDate(FormSeguroViagem state, object value)
