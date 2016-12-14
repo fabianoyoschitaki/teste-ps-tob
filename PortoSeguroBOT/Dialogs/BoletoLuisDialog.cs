@@ -19,6 +19,7 @@ namespace PortoSeguroBOT.Dialogs
     public class BoletoLuisDialog : LuisDialog<object>
     {
         private static readonly log4net.ILog logNone = log4net.LogManager.GetLogger("BotRollingFileLoggerNone");
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         [LuisIntent("GerarSegundaViaBoleto")]
         [LuisIntent("GerarSegundaViaBoletoRE")]
@@ -266,9 +267,9 @@ namespace PortoSeguroBOT.Dialogs
                 {
                     await context.PostAsync("Selecione a parcela que deseja emitir o boleto");
                     List<Attachment> heroCards = new List<Attachment>();
-
                     foreach (dynamic parc in Documento.documento.parcelas.parcela)
                     {
+                        log.Info("[PARCELA]parc.numeroParcela.Value|parc.valorLiquidoParcela.Value|parc.dataVencimento.Value");
                         heroCards.Add(Formatters.GetHeroCard(
                                 "Parcela" + parc.numeroParcela.Value,
                                 "Valor: " + parc.valorLiquidoParcela.Value,
