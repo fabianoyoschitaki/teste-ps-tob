@@ -265,11 +265,12 @@ namespace PortoSeguroBOT.Dialogs
             {
                 try
                 {
-                    await context.PostAsync("Selecione a parcela que deseja emitir o boleto");
+                    //await context.PostAsync("Selecione a parcela que deseja emitir o boleto");
+                    log.Debug("[PARCELA]Gerando Lista de Parcelas");
                     List<Attachment> heroCards = new List<Attachment>();
                     foreach (dynamic parc in Documento.documento.parcelas.parcela)
                     {
-                        log.Info("[PARCELA]parc.numeroParcela.Value|parc.valorLiquidoParcela.Value|parc.dataVencimento.Value");
+                        log.Debug("[PARCELA]" + parc.numeroParcela.Value);
                         heroCards.Add(Formatters.GetHeroCard(
                                 "Parcela" + parc.numeroParcela.Value,
                                 "Valor: " + parc.valorLiquidoParcela.Value,
@@ -302,7 +303,7 @@ namespace PortoSeguroBOT.Dialogs
 
         public async void GerarSegundaViaBoleto(IDialogContext context, string codigo)
         {
-            await context.PostAsync($"Aguarde um momento enquanto verificamos seu boleto.");
+            await context.PostAsync($"Aguarde um momento enquanto verificamos as parcelas pendentes de sua apólice (Para pagamentos via boleto).");
             try
             {
                 if (codigo.Split('|')[1] == "1")
