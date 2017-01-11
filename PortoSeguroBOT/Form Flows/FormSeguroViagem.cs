@@ -332,7 +332,7 @@ namespace PortoSeguroBOT.Form_Flows
             Pais pais = GetPais(value.ToString());
             if (pais == null)
             {
-                result.Feedback = "Desculpe, esse não é um estado país válido, digite um país ou SAIR para cancelar a cotação.";
+                result.Feedback = "Desculpe, esse não é um país válido, digite um país ou SAIR para cancelar a cotação.";
                 result.IsValid = false;
             }
             else

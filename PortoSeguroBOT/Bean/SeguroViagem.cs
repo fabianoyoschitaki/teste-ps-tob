@@ -28,6 +28,7 @@ namespace PortoSeguroBOT.Bean
         public string Motivo { get; set; }
         public int CodMotivo { get; set; }
 
+        private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public class DataObject
         {
@@ -53,7 +54,8 @@ namespace PortoSeguroBOT.Bean
             URL.Append("&calculo.descricaoPaisDestino=");
             URL.Append(this.PaisDestino);
             URL.Append("&calculo.dataSaidaProponente="); 
-            URL.Append(this.DataPartida.ToString().Substring(0, 10));
+            //URL.Append(this.DataPartida.ToString().Substring(0, 10));
+            URL.Append(this.DataPartida.ToString("dd/MM/yyyy"));
             URL.Append("&calculo.diaSaidaProponente=");
             URL.Append(this.DataPartida.Day.ToString());
             URL.Append("&calculo.mesSaidaProponente=");
@@ -61,7 +63,8 @@ namespace PortoSeguroBOT.Bean
             URL.Append("&calculo.anoSaidaProponente=");
             URL.Append(this.DataPartida.Year.ToString());
             URL.Append("&calculo.dataRetornoProponente=");
-            URL.Append(this.DataRetorno.ToString().Substring(0, 10));
+           // URL.Append(this.DataRetorno.ToString().Substring(0, 10));
+            URL.Append(this.DataRetorno.ToString("dd/MM/yyyy"));
             URL.Append("&calculo.diaRetornoProponente=");
             URL.Append(this.DataRetorno.Day.ToString());
             URL.Append("&calculo.mesRetornoProponente=");
@@ -82,6 +85,8 @@ namespace PortoSeguroBOT.Bean
             URL.Append(this.EsporteAventura.ToString());
             URL.Append("&calculo.motivoViagem=");
             URL.Append(this.CodMotivo.ToString());
+
+            log.Debug($"Chamando cotação na URL:{URL}");
 
             // Create the web request  
             HttpWebRequest request = WebRequest.Create(URL.ToString()) as HttpWebRequest;

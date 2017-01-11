@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -88,6 +89,7 @@ namespace PortoSeguroBOT.Bean
                     // Get the response stream  
                     StreamReader reader = new StreamReader(response.GetResponseStream());
                     string JSON = reader.ReadToEnd();
+                    JSON = JSON.Substring(0,JSON.IndexOf("xmlns")-2) + JSON.Substring(JSON.IndexOf("/Transform")+12);
                     objJson = JsonConvert.DeserializeObject(JSON);
                 }
             }

@@ -2,6 +2,7 @@
 using Microsoft.Bot.Builder.Luis;
 using Microsoft.Bot.Builder.Luis.Models;
 using Microsoft.Bot.Connector;
+using Newtonsoft.Json.Linq;
 using PortoSeguroBOT.Bean;
 using PortoSeguroBOT.Helpers;
 using System;
