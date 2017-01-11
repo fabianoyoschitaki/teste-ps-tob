@@ -5,12 +5,15 @@ using Microsoft.Bot.Builder.Luis.Models;
 using Microsoft.Bot.Connector;
 using PortoSeguroBOT.Bean;
 using PortoSeguroBOT.Helpers;
+using PortoSeguroBOT.QnA;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web;
+using static PortoSeguroBOT.QnA.QnAEnum;
 
 namespace PortoSeguroBOT.Dialogs
 {
@@ -89,11 +92,11 @@ namespace PortoSeguroBOT.Dialogs
             if (context.UserData.TryGetValue("UserData", out user))
             {
                 string UserFirstName = Formatters.Capitalize(user.Nome).Split()[0];
-                await context.PostAsync($"Benvindo a Porto Seguro {UserFirstName}, como podemos te ajudar? ");
+                await context.PostAsync($"Benvindo a Porto Seguro {UserFirstName}, como podemos te ajudar?");
             }
             else
             {
-                await context.PostAsync("Benvindo a Porto Seguro, como podemos te ajudar? ");
+                await context.PostAsync("Benvindo a Porto Seguro, como podemos te ajudar?");
             }
 
             context.Wait(MessageReceived);
@@ -150,13 +153,37 @@ namespace PortoSeguroBOT.Dialogs
         [LuisIntent("SolicitarInformacao")]
         public async Task SolicitarInfoAsync(IDialogContext context, LuisResult result)
         {
+            //solicitarInformacao(context, result);
+            try
+            {
+                string searchFor = "";
+                foreach (var dt in result.Entities)
+                {
+                    if ("InfoEntity".Equals(dt.Type))
+                    {
+                        searchFor = dt.Entity;
+                    }
+                }
+                dynamic resposta = QnACaller.obterResposta(SOURCE.SEGURO_AUTO, searchFor);
+                string retorno = WebUtility.HtmlDecode(resposta.answer.Value);
+                await context.PostAsync(retorno);
+            }
+            catch (Exception e)
+            {
+                await context.PostAsync("Desculpe, ocorreu um erro enquanto buscávamos mais informações, por favor tente mais tarde.");
+            }
+            context.Wait(MessageReceived);
+        }
+
+        private async void solicitarInformacao(IDialogContext context, LuisResult result)
+        {
             await context.PostAsync("Por favor, veja se algum desses links pode te ajudar:");
             try
             {
                 string SearchFor = "";
                 foreach (var dt in result.Entities)
                 {
-                    if("InfoEntity".Equals(dt.Type))
+                    if ("InfoEntity".Equals(dt.Type))
                     {
                         SearchFor = dt.Entity;
                     }
@@ -166,7 +193,7 @@ namespace PortoSeguroBOT.Dialogs
                 SearchList.AddRange(MicrosftAPI.BingSearch(SearchFor));
 
                 List<Attachment> heroCards = new List<Attachment>();
-                
+
                 foreach (SearchResult s in SearchList)
                 {
                     heroCards.Add(Formatters.GetHeroCard(

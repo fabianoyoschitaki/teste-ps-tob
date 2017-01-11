@@ -23,16 +23,15 @@ namespace PortoSeguroBOT
     {
         //log4net
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        
         public static string tex;
+
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
         {
             ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
-
             if (activity.Type == ActivityTypes.ConversationUpdate)
             {
                 // mensagem para retornar
-                string messageToReply = "Benvindo a Porto Seguro, como podemos te ajudar? ";
+                string messageToReply = "Benvindo a Porto Seguro, como podemos te ajudar?";
                 StateClient stateClient = activity.GetStateClient();
                 BotData userData = await stateClient.BotState.GetUserDataAsync(activity.ChannelId, activity.From.Id);
                 Usuario user = userData.GetProperty<Usuario>("UserData");
@@ -40,7 +39,7 @@ namespace PortoSeguroBOT
                 if (user != null)
                 {
                     string UserFirstName = Formatters.Capitalize(user.Nome).Split( )[0];
-                    messageToReply = $"Benvindo a Porto Seguro {UserFirstName}, como podemos te ajudar? ";                    
+                    messageToReply = $"Benvindo a Porto Seguro {UserFirstName}, como podemos te ajudar?";                    
                 }
                 log.Info("[BOT]["+activity.ChannelId + "][" + activity.From.Id + "]: " + messageToReply);
                 await connector.Conversations.ReplyToActivityAsync(activity.CreateReply(messageToReply));
@@ -55,26 +54,22 @@ namespace PortoSeguroBOT
                         {
                             try
                             {
-                                log.Info("UsuárioAtt [" + activity.From.Id + "]: " + at.Name);
-                                log.Info("UsuárioAtt [" + activity.From.Id + "]: " + at.ThumbnailUrl);
-                                log.Info("UsuárioAtt [" + activity.From.Id + "]: " + at.ContentUrl);
-                                log.Info("UsuárioAtt [" + activity.From.Id + "]: " + at.ContentType);
+                                log.Info("UsuárioAtt [" + activity.From.Id + "] Name:" + at.Name + " ThumbnailUrl:" + at.ThumbnailUrl + " ContentUrl:" + at.ContentUrl + " ContentType:" + at.ContentType);
                                 await connector.Conversations.ReplyToActivityAsync(activity.CreateReply("Desculpe, no momento eu não consigo entender emoticons e anexos, por favor, use apenas texto."));
                             }
                             catch (Exception e)
                             {
-
+                                log.Error("Erro: " + e.ToString(), e);
                             }
                         }
                     }
                 }
                 catch (Exception e)
                 {
-
+                    log.Error("Erro: " + e.ToString(), e);
                 }
-
                 await Conversation.SendAsync(activity, () => new RootLuisDialog());
-                log.Info("Usuário ["+activity.ChannelId+"][" + activity.From.Id + "]: " + activity.Text);
+                log.Info("Usuário [" + activity.ChannelId + "][" + activity.From.Id + "]: " + activity.Text);
             }
             else
             {
@@ -102,10 +97,7 @@ namespace PortoSeguroBOT
             else if (message.Type == ActivityTypes.Ping)
             {
             }
-
             return null;
-        }
-
-      
+        }     
     }
 }
