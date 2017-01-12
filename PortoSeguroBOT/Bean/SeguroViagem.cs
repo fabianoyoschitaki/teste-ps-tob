@@ -86,7 +86,7 @@ namespace PortoSeguroBOT.Bean
             URL.Append("&calculo.motivoViagem=");
             URL.Append(this.CodMotivo.ToString());
 
-            log.Debug($"Chamando cotação na URL:{URL}");
+            log.Debug($"Chamando cotação na URL: {URL}");
 
             // Create the web request  
             HttpWebRequest request = WebRequest.Create(URL.ToString()) as HttpWebRequest;

@@ -11,8 +11,7 @@ namespace PortoSeguroBOT
     {
         protected void Application_Start()
         {
-            GlobalConfiguration.Configure(WebApiConfig.Register);
-            System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
+            GlobalConfiguration.Configure(WebApiConfig.Register);            
         }
     }
 }
