@@ -18,7 +18,7 @@ namespace PortoSeguroBOT.QnA
         //log4net
         private static readonly log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public static dynamic obterResposta(QnAEnum.SOURCE source, string pergunta)
+        public static dynamic obterResposta(QnAEnum.BASE source, string pergunta)
         {
             StringBuilder URL = new StringBuilder(QnAConstants.QNA_HOST);
             switch (source)

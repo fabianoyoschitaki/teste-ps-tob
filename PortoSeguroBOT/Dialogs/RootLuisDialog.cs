@@ -164,7 +164,7 @@ namespace PortoSeguroBOT.Dialogs
                         searchFor = dt.Entity;
                     }
                 }
-                dynamic resposta = QnACaller.obterResposta(SOURCE.SEGURO_AUTO, searchFor);
+                dynamic resposta = QnACaller.obterResposta(QnAEnum.BASE.SEGURO_AUTO, searchFor);
                 string retorno = WebUtility.HtmlDecode(resposta.answer.Value);
                 await context.PostAsync(retorno);
             }
